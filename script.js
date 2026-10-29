@@ -50,8 +50,10 @@ const mapDist = db => ({ LogID: db.log_id, BookTitle: db.book_title, Recipient: 
 async function fetchLibraryDataFromSupabase() {
     try {
         const [bRes, mRes, borRes, sRes, dRes] = await Promise.all([
-            supabaseClient.from('books').select('*'), supabaseClient.from('members').select('*'),
-            supabaseClient.from('borrows').select('*'), supabaseClient.from('storage_stock').select('*'),
+            supabaseClient.from('books').select('*').order('id', { ascending: false }), 
+            supabaseClient.from('members').select('*'),
+            supabaseClient.from('borrows').select('*'), 
+            supabaseClient.from('storage_stock').select('*'),
             supabaseClient.from('distribution_logs').select('*')
         ]);
 
@@ -179,7 +181,6 @@ function openBookModal(book) {
     const isBorrowable = (book.classification || 'Borrowable').toLowerCase().includes('borrowable');
     const isPastor = currentUser && currentUser.designation.toLowerCase() === 'pastor';
 
-    // Restored Robust Button Logic
     if (copies <= 0 && isBorrowable) {
         btn.className = "px-4 py-2 bg-gray-400 text-white rounded-xl text-xs font-bold cursor-not-allowed";
         btn.textContent = "Out of Stock"; btn.onclick = null;
@@ -204,7 +205,6 @@ function openBookModal(book) {
 
 function openLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
 
-// ---------------- USER LOGIN ----------------
 async function loginMember() {
     const id = document.getElementById('login-id').value.trim().toUpperCase();
     const name = document.getElementById('login-name').value.trim().toLowerCase();
@@ -336,7 +336,7 @@ function openReturnModal(id) { targetReturnBorrow = allBorrows.find(b => b.Borro
 async function confirmAdminReturn() { const date = document.getElementById('return-date-input').value; const { error } = await supabaseClient.from('borrows').update({ status: 'Returned', return_date: date }).eq('borrow_id', targetReturnBorrow.BorrowID); if (!error) { targetReturnBorrow.Status = 'Returned'; closeModal('return-modal'); renderAdminTables(); initCatalog(); } }
 async function adminExtendLoan(id) { const b = allBorrows.find(x => x.BorrowID === id); const nd = new Date(b.DueDate); nd.setDate(nd.getDate() + 14); const nStr = nd.toISOString().split('T')[0]; const { error } = await supabaseClient.from('borrows').update({ due_date: nStr }).eq('borrow_id', id); if (!error) { b.DueDate = nStr; renderAdminTables(); alert("Extended"); } }
 
-// ---------------- ADD NEW BOOK TO CATALOG (Crash-Proofed) ----------------
+// ---------------- ADD, EDIT, DELETE BOOKS ----------------
 function openAddBookModal() { document.getElementById('add-book-modal').classList.remove('hidden'); }
 
 async function submitNewBook() {
@@ -355,23 +355,68 @@ async function submitNewBook() {
     };
 
     const { error } = await supabaseClient.from('books').insert([obj]);
-    
-    if (error) { 
-        alert("Error adding book: " + error.message); 
-        return; 
-    }
+    if (error) { alert("Error adding book: " + error.message); return; }
 
-    // Success! Clear out form inputs
     document.getElementById('add-book-title').value = '';
     document.getElementById('add-book-author').value = '';
     document.getElementById('add-book-desc').value = '';
 
-    // Guarantee the modal closes
     closeModal('add-book-modal');
     alert("Book successfully added to Catalog!");
+    fetchLibraryDataFromSupabase(); // Refreshes everything natively
+}
 
-    // Fetch fresh data so it updates everywhere smoothly
-    fetchLibraryDataFromSupabase();
+function openEditBookModal(id) {
+    const book = allBooks.find(b => b.id === id);
+    if (!book) return;
+    
+    document.getElementById('edit-book-id').value = book.id;
+    document.getElementById('edit-book-title').value = book.title;
+    document.getElementById('edit-book-author').value = book.author;
+    document.getElementById('edit-book-category').value = book.category;
+    document.getElementById('edit-book-class').value = book.classification;
+    document.getElementById('edit-book-copies').value = book.copies;
+    document.getElementById('edit-book-pages').value = book.pages;
+    document.getElementById('edit-book-desc').value = book.description;
+    document.getElementById('edit-book-img').value = book.image;
+    
+    document.getElementById('edit-book-modal').classList.remove('hidden');
+}
+
+async function submitEditBook() {
+    const id = parseInt(document.getElementById('edit-book-id').value);
+    const title = document.getElementById('edit-book-title').value.trim();
+    if (!title) { alert("Title is required."); return; }
+    
+    const obj = {
+        title: title,
+        author: document.getElementById('edit-book-author').value.trim() || 'Unknown',
+        category: document.getElementById('edit-book-category').value,
+        classification: document.getElementById('edit-book-class').value,
+        copies: parseInt(document.getElementById('edit-book-copies').value) || 1,
+        pages: parseInt(document.getElementById('edit-book-pages').value) || 200,
+        description: document.getElementById('edit-book-desc').value.trim(),
+        image: document.getElementById('edit-book-img').value.trim() || 'images/churchdiscipline.jpeg'
+    };
+
+    const { error } = await supabaseClient.from('books').update(obj).eq('id', id);
+    
+    if (error) { alert("Error updating book: " + error.message); return; }
+
+    closeModal('edit-book-modal');
+    alert("Book successfully updated!");
+    fetchLibraryDataFromSupabase(); // Sync everywhere
+}
+
+async function deleteBook(id) {
+    if (!confirm("Are you sure you want to PERMANENTLY delete this book from the catalog?")) return;
+
+    const { error } = await supabaseClient.from('books').delete().eq('id', id);
+    
+    if (error) { alert("Error deleting book: " + error.message); return; }
+
+    alert("Book removed from catalog!");
+    fetchLibraryDataFromSupabase(); // Sync everywhere
 }
 
 // ---------------- STOCK, STORAGE & MEMBERS ----------------
@@ -379,7 +424,6 @@ function renderStockAuditTable() {
     const tb = document.getElementById('stock-audit-tbody'); if (!tb) return;
     let tc = 0, tl = 0, ta = 0;
     
-    // Calculate availability safely
     allBooks.forEach(b => { 
         tc += b.copies; 
         const a = calculateAvailableCopies(b.id, b.copies); 
@@ -387,13 +431,11 @@ function renderStockAuditTable() {
         tl += (b.copies - a); 
     });
     
-    // Safely update KPI tags (Using optional chaining to prevent crashes)
     if(document.getElementById('stock-kpi-titles')) document.getElementById('stock-kpi-titles').textContent = allBooks.length; 
     if(document.getElementById('stock-kpi-total-copies')) document.getElementById('stock-kpi-total-copies').textContent = tc; 
     if(document.getElementById('stock-kpi-loaned')) document.getElementById('stock-kpi-loaned').textContent = tl; 
     if(document.getElementById('stock-kpi-available')) document.getElementById('stock-kpi-available').textContent = ta;
 
-    // Filter books for display (if search/filter dropdowns are used)
     const q = (document.getElementById('stock-search-input')?.value || '').toLowerCase().trim();
     const cat = document.getElementById('stock-category-filter')?.value || '';
     const acc = document.getElementById('stock-classification-filter')?.value || '';
@@ -411,7 +453,20 @@ function renderStockAuditTable() {
 
     tb.innerHTML = list.map(b => { 
         const a = calculateAvailableCopies(b.id, b.copies); 
-        return `<tr class="border-b"><td class="p-3 font-mono">#${b.id}</td><td class="p-3 font-bold">${b.title} <br><span class="text-[10px] font-normal text-church-500">By ${b.author}</span></td><td class="p-3">${b.category}</td><td class="p-3 text-[10px] font-bold">${b.classification}</td><td class="p-3 text-center">${b.copies}</td><td class="p-3 text-center text-amber-800">${b.copies - a}</td><td class="p-3 text-center text-emerald-700 font-bold">${a}</td><td class="p-3 text-right">${a > 0 ? '<span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[10px]">In Stock</span>' : '<span class="bg-red-100 text-red-800 px-1.5 py-0.5 rounded text-[10px]">Out</span>'}</td></tr>`; 
+        return `<tr class="border-b">
+            <td class="p-3 font-mono">#${b.id}</td>
+            <td class="p-3 font-bold">${b.title} <br><span class="text-[10px] font-normal text-church-500">By ${b.author}</span></td>
+            <td class="p-3">${b.category}</td>
+            <td class="p-3 text-[10px] font-bold">${b.classification}</td>
+            <td class="p-3 text-center">${b.copies}</td>
+            <td class="p-3 text-center text-amber-800">${b.copies - a}</td>
+            <td class="p-3 text-center text-emerald-700 font-bold">${a}</td>
+            <td class="p-3 text-center">${a > 0 ? '<span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[10px]">In Stock</span>' : '<span class="bg-red-100 text-red-800 px-1.5 py-0.5 rounded text-[10px]">Out</span>'}</td>
+            <td class="p-3 text-right">
+                <button onclick="openEditBookModal(${b.id})" class="text-blue-600 hover:text-blue-800 mr-2" title="Edit Book"><i class="fa-solid fa-pen-to-square"></i></button>
+                <button onclick="deleteBook(${b.id})" class="text-red-600 hover:text-red-800" title="Delete Book"><i class="fa-solid fa-trash"></i></button>
+            </td>
+        </tr>`; 
     }).join('');
 }
 
@@ -458,4 +513,8 @@ function openEditMemberModal(id) { targetEditMember = allMembers.find(m => m.Mem
 async function saveMemberContact() { const ph = document.getElementById('edit-mem-phone').value; const { error } = await supabaseClient.from('members').update({ phone: ph }).eq('member_id', targetEditMember.MemberID); if(!error) { targetEditMember.Phone = ph; closeModal('edit-member-modal'); renderMembersTable(); } }
 
 function closeModal(id) { document.getElementById(id)?.classList.add('hidden'); }
-window.addEventListener('click', (e) => { ['login-modal', 'book-modal', 'borrow-modal', 'onsite-modal', 'admin-pin-modal', 'add-book-modal', 'storage-intake-modal', 'storage-distribute-modal', 'issue-modal', 'return-modal', 'edit-member-modal', 'my-requests-modal'].forEach(id => { const el = document.getElementById(id); if (el && e.target === el) el.classList.add('hidden'); }); });
+window.addEventListener('click', (e) => { 
+    ['login-modal', 'book-modal', 'borrow-modal', 'onsite-modal', 'admin-pin-modal', 'add-book-modal', 'edit-book-modal', 'storage-intake-modal', 'storage-distribute-modal', 'issue-modal', 'return-modal', 'edit-member-modal', 'my-requests-modal'].forEach(id => { 
+        const el = document.getElementById(id); if (el && e.target === el) el.classList.add('hidden'); 
+    }); 
+});
