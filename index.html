@@ -127,12 +127,12 @@
 
             <!-- 5 Toggle Tabs -->
             <div class="flex flex-wrap gap-2 border-b border-church-200 pb-2">
-                <button id="tab-btn-circulation" onclick="switchAdminTab('circulation')" class="admin-tab-btn active px-4 py-2 rounded-xl text-xs font-bold bg-church-800 text-white shadow-sm flex items-center gap-2">
+                <button id="tab-btn-circulation" onclick="switchAdminTab('circulation')" class="admin-tab-btn active px-4 py-2 rounded-xl text-xs font-bold bg-church-800 text-white shadow-sm">
                     Circulation Desk <span id="badge-pending-count" class="bg-amber-500 text-white px-1.5 py-0.2 rounded-full text-[10px]">0</span>
                 </button>
-                <button id="tab-btn-stock" onclick="switchAdminTab('stock')" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200 flex items-center gap-2">Catalog Stock</button>
-                <button id="tab-btn-storage" onclick="switchAdminTab('storage')" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200 flex items-center gap-2">Storage & Dist.</button>
-                <button id="tab-btn-members" onclick="switchAdminTab('members')" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200 flex items-center gap-2">Members Directory</button>
+                <button id="tab-btn-stock" onclick="switchAdminTab('stock')" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Catalog Stock</button>
+                <button id="tab-btn-storage" onclick="switchAdminTab('storage')" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Storage & Dist.</button>
+                <button id="tab-btn-members" onclick="switchAdminTab('members')" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Members Directory</button>
             </div>
 
             <!-- WINDOW 1: CIRCULATION DESK -->
@@ -156,10 +156,64 @@
 
             <!-- WINDOW 2: CATALOG STOCK AUDIT -->
             <div id="admin-window-stock" class="hidden space-y-6">
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="bg-church-50 p-4 rounded-2xl border border-church-200">
+                        <p class="text-[11px] uppercase font-bold text-church-600">Total Book Titles</p>
+                        <p id="stock-kpi-titles" class="text-2xl font-black text-church-900 mt-1">0</p>
+                    </div>
+                    <div class="bg-church-50 p-4 rounded-2xl border border-church-200">
+                        <p class="text-[11px] uppercase font-bold text-church-600">Total Physical Copies</p>
+                        <p id="stock-kpi-total-copies" class="text-2xl font-black text-church-900 mt-1">0</p>
+                    </div>
+                    <div class="bg-church-50 p-4 rounded-2xl border border-church-200">
+                        <p class="text-[11px] uppercase font-bold text-amber-800">Currently On Loan</p>
+                        <p id="stock-kpi-loaned" class="text-2xl font-black text-amber-700 mt-1">0</p>
+                    </div>
+                    <div class="bg-church-50 p-4 rounded-2xl border border-church-200">
+                        <p class="text-[11px] uppercase font-bold text-emerald-800">Available on Shelves</p>
+                        <p id="stock-kpi-available" class="text-2xl font-black text-emerald-700 mt-1">0</p>
+                    </div>
+                </div>
+
                 <div class="bg-church-50 p-4 rounded-2xl border border-church-200 space-y-3">
-                    <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pb-3">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pb-3 border-b border-church-200">
                         <h3 class="text-xs font-bold text-church-900 uppercase">Stock & Inventory Query</h3>
-                        <button onclick="openAddBookModal()" class="bg-purple-700 hover:bg-purple-800 text-white px-3 py-1.5 rounded-xl font-bold text-xs"><i class="fa-solid fa-book-medical"></i> Add Book to Catalog</button>
+                        <button onclick="openAddBookModal()" class="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded-xl font-bold text-xs shadow"><i class="fa-solid fa-book-medical mr-1"></i> Add Book to Catalog</button>
+                    </div>
+                    <!-- Detailed Stock Filters -->
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+                        <div>
+                            <label class="block font-semibold mb-1 text-church-700">Search Title / Author</label>
+                            <input id="stock-search-input" oninput="renderStockAuditTable()" type="text" placeholder="Search..." class="w-full p-2 border rounded-xl bg-white">
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1 text-church-700">Category</label>
+                            <select id="stock-category-filter" onchange="renderStockAuditTable()" class="w-full p-2 border rounded-xl bg-white">
+                                <option value="">All Categories</option>
+                                <option value="Systematic Theology">Systematic Theology</option>
+                                <option value="Commentaries">Commentaries</option>
+                                <option value="Practical Theology">Practical Theology</option>
+                                <option value="Practical Living">Practical Living</option>
+                                <option value="Bibles">Bibles</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1 text-church-700">Access Rule</label>
+                            <select id="stock-classification-filter" onchange="renderStockAuditTable()" class="w-full p-2 border rounded-xl bg-white">
+                                <option value="">All Rules</option>
+                                <option value="Borrowable">Borrowable Only</option>
+                                <option value="Onsite">Onsite Only</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1 text-church-700">Availability</label>
+                            <select id="stock-availability-filter" onchange="renderStockAuditTable()" class="w-full p-2 border rounded-xl bg-white">
+                                <option value="">All</option>
+                                <option value="available">Available (> 0)</option>
+                                <option value="out">Out of Stock</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div class="overflow-x-auto border border-church-200 rounded-2xl bg-white">
@@ -280,7 +334,7 @@
             <p id="login-modal-notice" class="text-xs text-church-600">Enter your Member ID and Full Name to login.</p>
             <input id="login-id" type="text" placeholder="Member ID (e.g. CBC-001)" class="w-full p-2.5 border rounded-xl text-sm bg-church-50 font-bold">
             <input id="login-name" type="text" placeholder="Full Name" class="w-full p-2.5 border rounded-xl text-sm bg-church-50">
-            <div class="flex justify-end space-x-2 pt-2"><button onclick="closeModal('login-modal')" class="px-4 py-2 border rounded-xl text-xs">Cancel</button><button onclick="loginMember()" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Sign In</button></div>
+            <div class="flex justify-end space-x-2 pt-2"><button onclick="closeModal('login-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="loginMember()" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Sign In</button></div>
         </div>
     </div>
 
@@ -391,7 +445,7 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js?v=4.0"></script>
+    <script src="script.js?v=5.0"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
