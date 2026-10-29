@@ -176,10 +176,10 @@ function openBookModal(book) {
     document.getElementById('modal-copies').textContent = copies;
     
     const btn = document.getElementById('modal-action-btn');
-    const isBorrowable = book.classification.toLowerCase().includes('borrowable');
+    const isBorrowable = (book.classification || 'Borrowable').toLowerCase().includes('borrowable');
     const isPastor = currentUser && currentUser.designation.toLowerCase() === 'pastor';
 
-    // Button Logic Engine
+    // Restored Robust Button Logic
     if (copies <= 0 && isBorrowable) {
         btn.className = "px-4 py-2 bg-gray-400 text-white rounded-xl text-xs font-bold cursor-not-allowed";
         btn.textContent = "Out of Stock"; btn.onclick = null;
@@ -201,6 +201,27 @@ function openBookModal(book) {
 
     document.getElementById('book-modal').classList.remove('hidden');
 }
+
+function openLoginModal() { document.getElementById('login-modal').classList.remove('hidden'); }
+
+// ---------------- USER LOGIN ----------------
+async function loginMember() {
+    const id = document.getElementById('login-id').value.trim().toUpperCase();
+    const name = document.getElementById('login-name').value.trim().toLowerCase();
+    
+    if (!id || !name) { alert("Provide Member ID and Full Name."); return; }
+    if (allMembers.length === 0) { alert("Database is loading or no members exist yet. Please wait a second and try again."); return; }
+
+    const matched = allMembers.find(m => String(m.MemberID).trim().toUpperCase() === id && String(m.FullName).trim().toLowerCase() === name);
+    
+    if (matched) {
+        currentUser = { id: matched.MemberID, name: matched.FullName, designation: matched.Designation, phone: matched.Phone || '' };
+        localStorage.setItem('cbc_user', JSON.stringify(currentUser));
+        updateUserAuthUI(); closeModal('login-modal'); alert(`Welcome back, ${currentUser.name}!`);
+    } else alert("Credentials not found in records. Please check spelling or register with the Librarian.");
+}
+
+function logoutUser() { localStorage.removeItem('cbc_user'); currentUser = null; updateUserAuthUI(); }
 
 function openBorrowForm() {
     closeModal('book-modal');
@@ -261,25 +282,6 @@ async function submitOnsiteSchedule() {
     alert(`Your reading desk slot for ${date} at ${time} is recorded!`);
 }
 
-// ---------------- USER LOGIN ----------------
-async function loginMember() {
-    const id = document.getElementById('login-id').value.trim().toUpperCase();
-    const name = document.getElementById('login-name').value.trim().toLowerCase();
-    
-    if (!id || !name) { alert("Provide Member ID and Full Name."); return; }
-    if (allMembers.length === 0) { alert("Database is loading or no members exist yet."); return; }
-
-    // Case-insensitive, robust matching
-    const matched = allMembers.find(m => String(m.MemberID).trim().toUpperCase() === id && String(m.FullName).trim().toLowerCase() === name);
-    
-    if (matched) {
-        currentUser = { id: matched.MemberID, name: matched.FullName, designation: matched.Designation, phone: matched.Phone || '' };
-        localStorage.setItem('cbc_user', JSON.stringify(currentUser));
-        updateUserAuthUI(); closeModal('login-modal'); alert(`Welcome back, ${currentUser.name}!`);
-    } else alert("Credentials not found in records. Please check spelling or register.");
-}
-
-function logoutUser() { localStorage.removeItem('cbc_user'); currentUser = null; updateUserAuthUI(); }
 function openMyRequestsModal() {
     const list = document.getElementById('my-requests-list');
     const myLoans = allBorrows.filter(b => String(b.MemberID).toUpperCase() == String(currentUser.id).toUpperCase());
@@ -303,7 +305,7 @@ function updateLibrarianUI() {
     document.getElementById('admin-panel')?.classList.toggle('hidden', !isLibrarianActive);
     const btn = document.getElementById('librarian-btn-label'); if (btn) btn.textContent = isLibrarianActive ? "Exit Admin" : "Librarian";
 }
-function switchAdminTab(t) { ['circulation', 'stock', 'storage', 'members', 'analytics'].forEach(x => document.getElementById(`admin-window-${x}`)?.classList.toggle('hidden', x !== t)); }
+function switchAdminTab(t) { ['circulation', 'stock', 'storage', 'members'].forEach(x => document.getElementById(`admin-window-${x}`)?.classList.toggle('hidden', x !== t)); }
 
 function filterCirculationStatus(s) { currentCirculationFilter = s; renderCirculationTable(); }
 function renderCirculationCounts() {
@@ -312,7 +314,7 @@ function renderCirculationCounts() {
 }
 
 function renderAdminTables() {
-    renderCirculationCounts(); renderCirculationTable(); renderStockAuditTable(); renderStorageTables(); renderMembersTable(); applyAnalyticsTimelineFilter();
+    renderCirculationCounts(); renderCirculationTable(); renderStockAuditTable(); renderStorageTables(); renderMembersTable();
 }
 function renderCirculationTable() {
     const tb = document.getElementById('admin-borrows-tbody');
@@ -334,7 +336,7 @@ function openReturnModal(id) { targetReturnBorrow = allBorrows.find(b => b.Borro
 async function confirmAdminReturn() { const date = document.getElementById('return-date-input').value; const { error } = await supabaseClient.from('borrows').update({ status: 'Returned', return_date: date }).eq('borrow_id', targetReturnBorrow.BorrowID); if (!error) { targetReturnBorrow.Status = 'Returned'; closeModal('return-modal'); renderAdminTables(); initCatalog(); } }
 async function adminExtendLoan(id) { const b = allBorrows.find(x => x.BorrowID === id); const nd = new Date(b.DueDate); nd.setDate(nd.getDate() + 14); const nStr = nd.toISOString().split('T')[0]; const { error } = await supabaseClient.from('borrows').update({ due_date: nStr }).eq('borrow_id', id); if (!error) { b.DueDate = nStr; renderAdminTables(); alert("Extended"); } }
 
-// ---------------- ADD NEW BOOK TO CATALOG ----------------
+// ---------------- ADD NEW BOOK TO CATALOG (Crash-Proofed) ----------------
 function openAddBookModal() { document.getElementById('add-book-modal').classList.remove('hidden'); }
 
 async function submitNewBook() {
@@ -352,24 +354,65 @@ async function submitNewBook() {
         image: document.getElementById('add-book-img').value.trim() || 'images/churchdiscipline.jpeg'
     };
 
-    const { data, error } = await supabaseClient.from('books').insert([obj]).select();
-    if (error) { alert("Error adding book: " + error.message); return; }
-
-    if (data && data.length > 0) {
-        allBooks.push(normalizeBook(data[0]));
-        filteredBooks = allBooks;
-        initCatalog(); renderAdminTables(); closeModal('add-book-modal');
-        alert("Book successfully added!");
+    const { error } = await supabaseClient.from('books').insert([obj]);
+    
+    if (error) { 
+        alert("Error adding book: " + error.message); 
+        return; 
     }
+
+    // Success! Clear out form inputs
+    document.getElementById('add-book-title').value = '';
+    document.getElementById('add-book-author').value = '';
+    document.getElementById('add-book-desc').value = '';
+
+    // Guarantee the modal closes
+    closeModal('add-book-modal');
+    alert("Book successfully added to Catalog!");
+
+    // Fetch fresh data so it updates everywhere smoothly
+    fetchLibraryDataFromSupabase();
 }
 
 // ---------------- STOCK, STORAGE & MEMBERS ----------------
 function renderStockAuditTable() {
     const tb = document.getElementById('stock-audit-tbody'); if (!tb) return;
     let tc = 0, tl = 0, ta = 0;
-    allBooks.forEach(b => { tc += b.copies; const a = calculateAvailableCopies(b.id, b.copies); ta += a; tl += (b.copies - a); });
-    document.getElementById('stock-kpi-titles').textContent = allBooks.length; document.getElementById('stock-kpi-total-copies').textContent = tc; document.getElementById('stock-kpi-loaned').textContent = tl; document.getElementById('stock-kpi-available').textContent = ta;
-    tb.innerHTML = allBooks.map(b => { const a = calculateAvailableCopies(b.id, b.copies); return `<tr class="border-b"><td class="p-3 font-mono">#${b.id}</td><td class="p-3 font-bold">${b.title} <br><span class="text-[10px] font-normal text-church-500">By ${b.author}</span></td><td class="p-3">${b.category}</td><td class="p-3 text-[10px] font-bold">${b.classification}</td><td class="p-3 text-center">${b.copies}</td><td class="p-3 text-center text-amber-800">${b.copies - a}</td><td class="p-3 text-center text-emerald-700 font-bold">${a}</td><td class="p-3 text-right">${a > 0 ? '<span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[10px]">In Stock</span>' : '<span class="bg-red-100 text-red-800 px-1.5 py-0.5 rounded text-[10px]">Out</span>'}</td></tr>`; }).join('');
+    
+    // Calculate availability safely
+    allBooks.forEach(b => { 
+        tc += b.copies; 
+        const a = calculateAvailableCopies(b.id, b.copies); 
+        ta += a; 
+        tl += (b.copies - a); 
+    });
+    
+    // Safely update KPI tags (Using optional chaining to prevent crashes)
+    if(document.getElementById('stock-kpi-titles')) document.getElementById('stock-kpi-titles').textContent = allBooks.length; 
+    if(document.getElementById('stock-kpi-total-copies')) document.getElementById('stock-kpi-total-copies').textContent = tc; 
+    if(document.getElementById('stock-kpi-loaned')) document.getElementById('stock-kpi-loaned').textContent = tl; 
+    if(document.getElementById('stock-kpi-available')) document.getElementById('stock-kpi-available').textContent = ta;
+
+    // Filter books for display (if search/filter dropdowns are used)
+    const q = (document.getElementById('stock-search-input')?.value || '').toLowerCase().trim();
+    const cat = document.getElementById('stock-category-filter')?.value || '';
+    const acc = document.getElementById('stock-classification-filter')?.value || '';
+    const availF = document.getElementById('stock-availability-filter')?.value || '';
+
+    const list = allBooks.filter(b => {
+        if(q && !b.title.toLowerCase().includes(q) && !b.author.toLowerCase().includes(q)) return false;
+        if(cat && b.category !== cat) return false;
+        if(acc && b.classification !== acc) return false;
+        const a = calculateAvailableCopies(b.id, b.copies);
+        if(availF === 'available' && a <= 0) return false;
+        if(availF === 'out' && a > 0) return false;
+        return true;
+    });
+
+    tb.innerHTML = list.map(b => { 
+        const a = calculateAvailableCopies(b.id, b.copies); 
+        return `<tr class="border-b"><td class="p-3 font-mono">#${b.id}</td><td class="p-3 font-bold">${b.title} <br><span class="text-[10px] font-normal text-church-500">By ${b.author}</span></td><td class="p-3">${b.category}</td><td class="p-3 text-[10px] font-bold">${b.classification}</td><td class="p-3 text-center">${b.copies}</td><td class="p-3 text-center text-amber-800">${b.copies - a}</td><td class="p-3 text-center text-emerald-700 font-bold">${a}</td><td class="p-3 text-right">${a > 0 ? '<span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[10px]">In Stock</span>' : '<span class="bg-red-100 text-red-800 px-1.5 py-0.5 rounded text-[10px]">Out</span>'}</td></tr>`; 
+    }).join('');
 }
 
 function switchStorageSubTab(t) { currentStorageSubTab = t; document.getElementById('storage-view-stock').classList.toggle('hidden', t !== 'stock'); document.getElementById('storage-view-dist').classList.toggle('hidden', t !== 'dist'); }
@@ -377,7 +420,7 @@ function renderStorageTables() {
     const sT = document.getElementById('storage-stock-tbody'); const dT = document.getElementById('storage-dist-tbody');
     if (sT) sT.innerHTML = allStorageStock.map(s => `<tr><td class="p-3 font-mono">${s.ItemID}</td><td class="p-3 font-bold">${s.Title}</td><td class="p-3">${s.Source}</td><td class="p-3">${s.DateReceived}</td><td class="p-3 text-center">${s.TotalReceived}</td><td class="p-3 text-center text-amber-800">${s.TotalDistributed}</td><td class="p-3 text-center text-emerald-700 font-bold">${s.RemainingStock}</td><td class="p-3 text-right"><button onclick="openStorageDistributeModal('${s.ItemID}')" class="bg-amber-700 text-white px-2 py-1 rounded text-[10px]">Distribute</button></td></tr>`).join('');
     if (dT) dT.innerHTML = allDistributionLogs.map(d => `<tr><td class="p-3 font-mono">${d.LogID}</td><td class="p-3 font-bold">${d.BookTitle}</td><td class="p-3">${d.Recipient}</td><td class="p-3 text-center">${d.Quantity}</td><td class="p-3">${d.Date}</td><td class="p-3">${d.Notes}</td></tr>`).join('');
-    document.getElementById('count-dist-logs').textContent = allDistributionLogs.length;
+    if(document.getElementById('count-dist-logs')) document.getElementById('count-dist-logs').textContent = allDistributionLogs.length;
 }
 
 function openStorageIntakeModal() { document.getElementById('storage-intake-modal').classList.remove('hidden'); }
@@ -394,7 +437,7 @@ function openStorageDistributeModal(p) {
 }
 function updateDistributionMax() {
     const i = allStorageStock.find(x => x.ItemID === document.getElementById('dist-item-select').value);
-    if(i) document.getElementById('dist-available-hint').textContent = `${i.RemainingStock} copies available.`;
+    if(i && document.getElementById('dist-available-hint')) document.getElementById('dist-available-hint').textContent = `${i.RemainingStock} copies available.`;
 }
 async function submitDistributionRecord() {
     const id = document.getElementById('dist-item-select').value; const i = allStorageStock.find(x => x.ItemID === id); const q = parseInt(document.getElementById('dist-qty').value) || 1;
@@ -409,14 +452,10 @@ async function adminRegisterMember() {
     const obj = { member_id: document.getElementById('new-mem-id').value.trim().toUpperCase(), full_name: document.getElementById('new-mem-name').value.trim(), designation: document.getElementById('new-mem-desig').value, phone: document.getElementById('new-mem-phone').value.trim() };
     if (!obj.member_id || !obj.full_name) { alert("Provide ID and Name"); return; }
     const { error } = await supabaseClient.from('members').insert([obj]); if (error) { alert(error.message); return; }
-    allMembers.push(mapMember(obj)); alert("Registered!"); renderMembersTable();
+    allMembers.push(mapMember(obj)); alert("Registered!"); renderMembersTable(); document.getElementById('new-mem-id').value = ''; document.getElementById('new-mem-name').value = '';
 }
 function openEditMemberModal(id) { targetEditMember = allMembers.find(m => m.MemberID === id); document.getElementById('edit-mem-name').textContent = targetEditMember.FullName; document.getElementById('edit-mem-phone').value = targetEditMember.Phone; document.getElementById('edit-member-modal').classList.remove('hidden'); }
 async function saveMemberContact() { const ph = document.getElementById('edit-mem-phone').value; const { error } = await supabaseClient.from('members').update({ phone: ph }).eq('member_id', targetEditMember.MemberID); if(!error) { targetEditMember.Phone = ph; closeModal('edit-member-modal'); renderMembersTable(); } }
-
-function applyAnalyticsTimelineFilter() {
-    document.getElementById('stat-period-borrows').textContent = allBorrows.length; document.getElementById('stat-total-members').textContent = allMembers.length;
-}
 
 function closeModal(id) { document.getElementById(id)?.classList.add('hidden'); }
 window.addEventListener('click', (e) => { ['login-modal', 'book-modal', 'borrow-modal', 'onsite-modal', 'admin-pin-modal', 'add-book-modal', 'storage-intake-modal', 'storage-distribute-modal', 'issue-modal', 'return-modal', 'edit-member-modal', 'my-requests-modal'].forEach(id => { const el = document.getElementById(id); if (el && e.target === el) el.classList.add('hidden'); }); });
