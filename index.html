@@ -192,10 +192,12 @@
                             <select id="stock-category-filter" onchange="renderStockAuditTable()" class="w-full p-2 border rounded-xl bg-white">
                                 <option value="">All Categories</option>
                                 <option value="Systematic Theology">Systematic Theology</option>
+                                <option value="Biblical Theology">Biblical Theology</option>
                                 <option value="Commentaries">Commentaries</option>
                                 <option value="Practical Theology">Practical Theology</option>
                                 <option value="Practical Living">Practical Living</option>
                                 <option value="Bibles">Bibles</option>
+                                <option value="Ethics">Ethics</option>
                             </select>
                         </div>
                         <div>
@@ -203,7 +205,7 @@
                             <select id="stock-classification-filter" onchange="renderStockAuditTable()" class="w-full p-2 border rounded-xl bg-white">
                                 <option value="">All Rules</option>
                                 <option value="Borrowable">Borrowable Only</option>
-                                <option value="Onsite">Onsite Only</option>
+                                <option value="Onsite Only">Onsite Only</option>
                             </select>
                         </div>
                         <div>
@@ -219,7 +221,7 @@
                 <div class="overflow-x-auto border border-church-200 rounded-2xl bg-white">
                     <table class="w-full text-left text-xs border-collapse">
                         <thead class="bg-church-100 text-church-800 uppercase font-semibold text-[11px]">
-                            <tr><th class="p-3">ID</th><th class="p-3">Title & Author</th><th class="p-3">Category</th><th class="p-3">Access</th><th class="p-3 text-center">Copies</th><th class="p-3 text-center text-amber-900">On Loan</th><th class="p-3 text-center text-emerald-900">On Shelf</th><th class="p-3 text-right">Status</th></tr>
+                            <tr><th class="p-3">ID</th><th class="p-3">Title & Author</th><th class="p-3">Category</th><th class="p-3">Access</th><th class="p-3 text-center">Copies</th><th class="p-3 text-center text-amber-900">On Loan</th><th class="p-3 text-center text-emerald-900">On Shelf</th><th class="p-3 text-center">Status</th><th class="p-3 text-right">Actions</th></tr>
                         </thead>
                         <tbody id="stock-audit-tbody" class="divide-y divide-church-100"></tbody>
                     </table>
@@ -306,10 +308,12 @@
                 <div class="grid grid-cols-2 gap-2">
                     <select id="add-book-category" class="w-full p-2 border rounded-xl bg-church-50">
                         <option value="Systematic Theology">Systematic Theology</option>
+                        <option value="Biblical Theology">Biblical Theology</option>
                         <option value="Commentaries">Commentaries</option>
                         <option value="Practical Theology">Practical Theology</option>
                         <option value="Practical Living">Practical Living</option>
                         <option value="Bibles">Bibles</option>
+                        <option value="Ethics">Ethics</option>
                     </select>
                     <select id="add-book-class" class="w-full p-2 border rounded-xl bg-church-50">
                         <option value="Borrowable">Borrowable</option>
@@ -324,6 +328,40 @@
                 <input id="add-book-img" type="text" placeholder="Image Name (e.g. images/mybook.jpeg)" value="images/churchdiscipline.jpeg" class="w-full p-2 border rounded-xl bg-church-50">
             </div>
             <div class="flex justify-end space-x-2 pt-2"><button onclick="closeModal('add-book-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="submitNewBook()" class="px-5 py-2 bg-purple-700 text-white rounded-xl text-xs font-bold">Add Book</button></div>
+        </div>
+    </div>
+
+    <!-- Edit Book Modal -->
+    <div id="edit-book-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border">
+            <h3 class="text-base font-bold text-church-900"><i class="fa-solid fa-pen-to-square text-blue-600"></i> Edit Book Details</h3>
+            <div class="space-y-2 text-xs">
+                <input type="hidden" id="edit-book-id">
+                <input id="edit-book-title" type="text" placeholder="Book Title" class="w-full p-2 border rounded-xl bg-church-50 font-bold">
+                <input id="edit-book-author" type="text" placeholder="Author" class="w-full p-2 border rounded-xl bg-church-50">
+                <div class="grid grid-cols-2 gap-2">
+                    <select id="edit-book-category" class="w-full p-2 border rounded-xl bg-church-50">
+                        <option value="Systematic Theology">Systematic Theology</option>
+                        <option value="Biblical Theology">Biblical Theology</option>
+                        <option value="Commentaries">Commentaries</option>
+                        <option value="Practical Theology">Practical Theology</option>
+                        <option value="Practical Living">Practical Living</option>
+                        <option value="Bibles">Bibles</option>
+                        <option value="Ethics">Ethics</option>
+                    </select>
+                    <select id="edit-book-class" class="w-full p-2 border rounded-xl bg-church-50">
+                        <option value="Borrowable">Borrowable</option>
+                        <option value="Onsite Only">Onsite Only</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div><label class="block font-bold mb-1">Copies</label><input id="edit-book-copies" type="number" min="1" class="w-full p-2 border rounded-xl bg-church-50"></div>
+                    <div><label class="block font-bold mb-1">Pages</label><input id="edit-book-pages" type="number" min="1" class="w-full p-2 border rounded-xl bg-church-50"></div>
+                </div>
+                <textarea id="edit-book-desc" placeholder="Brief Description..." rows="2" class="w-full p-2 border rounded-xl bg-church-50"></textarea>
+                <input id="edit-book-img" type="text" placeholder="Image Name (e.g. images/mybook.jpeg)" class="w-full p-2 border rounded-xl bg-church-50">
+            </div>
+            <div class="flex justify-end space-x-2 pt-2"><button onclick="closeModal('edit-book-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="submitEditBook()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold">Save Changes</button></div>
         </div>
     </div>
 
