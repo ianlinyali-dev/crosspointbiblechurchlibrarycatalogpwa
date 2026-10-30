@@ -99,9 +99,9 @@
                         <option value="Systematic Theology">Systematic Theology</option>
                         <option value="Biblical Theology">Biblical Theology</option>
                         <option value="Commentaries">Commentaries</option>
-                        <option value="Bibles">Bibles</option>
-                        <option value="Practical Living">Practical Living</option>
                         <option value="Practical Theology">Practical Theology</option>
+                        <option value="Practical Living">Practical Living</option>
+                        <option value="Bibles">Bibles</option>
                         <option value="Ethics">Ethics</option>
                     </select>
                     <button onclick="exportPublicCatalogCSV()" class="w-full sm:w-auto bg-church-100 hover:bg-church-200 border border-church-300 text-church-800 px-4 py-2.5 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 whitespace-nowrap">
@@ -149,7 +149,7 @@
                 <button id="tab-btn-stock" onclick="switchAdminTab('stock')" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Catalog Stock</button>
                 <button id="tab-btn-storage" onclick="switchAdminTab('storage')" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Storage & Dist.</button>
                 <button id="tab-btn-members" onclick="switchAdminTab('members')" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Members</button>
-                <button id="tab-btn-analytics" onclick="switchAdminTab('analytics')" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Reports & Analytics</button>
+                <button id="tab-btn-analytics" onclick="switchAdminTab('analytics')" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Borrow Reports</button>
             </div>
 
             <!-- WINDOW 1: CIRCULATION DESK -->
@@ -196,8 +196,12 @@
                 <div class="bg-church-50 p-4 rounded-2xl border border-church-200 space-y-3">
                     <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pb-3 border-b border-church-200">
                         <h3 class="text-xs font-bold text-church-900 uppercase">Stock & Inventory Query</h3>
-                        <button onclick="openAddBookModal()" class="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded-xl font-bold text-xs shadow"><i class="fa-solid fa-book-medical mr-1"></i> Add Book to Catalog</button>
+                        <div class="flex gap-2">
+                            <button onclick="exportStockReportCSV()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow"><i class="fa-solid fa-file-excel mr-1"></i> Export Report</button>
+                            <button onclick="openAddBookModal()" class="bg-purple-700 hover:bg-purple-800 text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow"><i class="fa-solid fa-book-medical mr-1"></i> Add Book</button>
+                        </div>
                     </div>
+                    <!-- Detailed Stock Filters -->
                     <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
                         <div>
                             <label class="block font-semibold mb-1 text-church-700">Search Title / Author</label>
@@ -255,9 +259,15 @@
                         </div>
                     </div>
                 </div>
-                <div class="flex space-x-2 border-b border-church-200 pb-2">
-                    <button id="subtab-storage-stock" onclick="switchStorageSubTab('stock')" class="px-3 py-1 rounded-lg text-xs font-bold bg-church-800 text-white">Storage Stock</button>
-                    <button id="subtab-storage-dist" onclick="switchStorageSubTab('dist')" class="px-3 py-1 rounded-lg text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Dist. Logs (<span id="count-dist-logs">0</span>)</button>
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-3 border-b border-church-200 pb-2">
+                    <div class="flex space-x-2">
+                        <button id="subtab-storage-stock" onclick="switchStorageSubTab('stock')" class="px-3 py-1 rounded-lg text-xs font-bold bg-church-800 text-white">Storage Stock</button>
+                        <button id="subtab-storage-dist" onclick="switchStorageSubTab('dist')" class="px-3 py-1 rounded-lg text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Dist. Logs (<span id="count-dist-logs">0</span>)</button>
+                    </div>
+                    <div class="flex space-x-2 w-full sm:w-auto">
+                        <input id="storage-search-input" oninput="renderStorageTables()" type="text" placeholder="Search storage..." class="w-full sm:w-48 p-1.5 border rounded-lg text-xs bg-white">
+                        <button onclick="exportStorageCSV()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 shadow-sm"><i class="fa-solid fa-file-excel"></i> Export</button>
+                    </div>
                 </div>
                 <div id="storage-view-stock" class="overflow-x-auto border border-church-200 rounded-2xl bg-white">
                     <table class="w-full text-left text-xs border-collapse">
@@ -295,8 +305,23 @@
                         <button onclick="adminRegisterMember()" class="bg-church-800 hover:bg-church-900 text-white font-bold rounded-xl text-xs py-2">Register</button>
                     </div>
                 </div>
+                
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-3 pb-2">
+                    <div class="flex space-x-2 w-full sm:w-auto flex-grow">
+                        <input id="member-search-input" oninput="renderMembersTable()" type="text" placeholder="Search by Name, ID, or Phone..." class="w-full sm:w-64 p-2 border rounded-lg text-xs bg-white border-church-300">
+                        <select id="member-desig-filter" onchange="renderMembersTable()" class="p-2 border rounded-lg text-xs bg-white border-church-300">
+                            <option value="">All Roles</option>
+                            <option value="Church Member">Church Member</option>
+                            <option value="Regular Attendee">Regular Attendee</option>
+                            <option value="Agano Student">Agano Student</option>
+                            <option value="Pastor">Pastor</option>
+                        </select>
+                    </div>
+                    <button onclick="exportMembersCSV()" class="w-full sm:w-auto bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1 shadow-sm"><i class="fa-solid fa-file-excel"></i> Export CSV</button>
+                </div>
+
                 <div class="overflow-x-auto border border-church-200 rounded-2xl">
-                    <table class="w-full text-left text-xs border-collapse">
+                    <table class="w-full text-left text-xs border-collapse bg-white">
                         <thead class="bg-church-100 text-church-800 uppercase font-semibold text-[11px]">
                             <tr><th class="p-3">Member ID</th><th class="p-3">Full Name</th><th class="p-3">Designation</th><th class="p-3">Phone</th><th class="p-3 text-right">Actions</th></tr>
                         </thead>
@@ -305,12 +330,12 @@
                 </div>
             </div>
 
-            <!-- WINDOW 5: ANALYTICS & REPORTS -->
+            <!-- WINDOW 5: ANALYTICS & REPORTS (Now dedicated just to Borrows) -->
             <div id="admin-window-analytics" class="hidden space-y-6">
                 <div class="bg-church-50 p-4 rounded-2xl border border-church-200 space-y-3">
                     <div class="flex items-center justify-between border-b pb-2">
                         <h3 class="text-xs font-bold text-church-900 uppercase">Track & Filter Borrowed Books</h3>
-                        <button onclick="exportAnalyticsCSV()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow-sm transition"><i class="fa-solid fa-file-excel mr-1"></i> Export Report (CSV)</button>
+                        <button onclick="exportAnalyticsCSV()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow-sm transition"><i class="fa-solid fa-file-excel mr-1"></i> Export Report</button>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 text-xs">
                         <div><label class="block font-semibold mb-1 text-church-700">From Date</label><input id="analytics-date-from" type="date" class="w-full p-2 border rounded-xl bg-white"></div>
@@ -330,21 +355,18 @@
                         <div class="flex items-end"><button onclick="applyAnalyticsTimelineFilter()" class="w-full bg-church-800 text-white font-bold py-2 rounded-xl">Apply Filter</button></div>
                     </div>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="bg-church-50 p-4 rounded-xl border border-church-200">
                         <p class="text-xs text-church-600 uppercase font-bold">Total Borrows Filtered</p><p id="stat-period-borrows" class="text-2xl font-black text-church-900 mt-1">0</p>
                     </div>
                     <div class="bg-church-50 p-4 rounded-xl border border-church-200">
                         <p class="text-xs text-church-600 uppercase font-bold">Most Borrowed Book (In Filter)</p><p id="stat-top-book" class="text-sm font-bold text-amber-800 mt-1 truncate">None</p>
                     </div>
-                    <div class="bg-church-50 p-4 rounded-xl border border-church-200">
-                        <p class="text-xs text-church-600 uppercase font-bold">Total Library Members</p><p id="stat-total-members" class="text-2xl font-black text-church-900 mt-1">0</p>
-                    </div>
                 </div>
-                <div class="overflow-x-auto border border-church-200 rounded-2xl">
+                <div class="overflow-x-auto border border-church-200 rounded-2xl bg-white">
                     <table class="w-full text-left text-xs border-collapse">
                         <thead class="bg-church-100 text-church-800 uppercase font-semibold text-[11px]">
-                            <tr><th class="p-3">Book Title</th><th class="p-3">Borrower</th><th class="p-3">Pickup</th><th class="p-3">Due</th><th class="p-3">Status</th></tr>
+                            <tr><th class="p-3">Book Title</th><th class="p-3">Borrower</th><th class="p-3">Pickup Date</th><th class="p-3">Due Date</th><th class="p-3">Status</th></tr>
                         </thead>
                         <tbody id="analytics-borrows-tbody" class="divide-y divide-church-100"></tbody>
                     </table>
@@ -439,6 +461,7 @@
         </div>
     </div>
 
+    <!-- Librarian PIN Modal -->
     <div id="admin-pin-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl border">
             <h3 class="text-base font-extrabold text-church-900 text-center">Librarian Access</h3>
@@ -581,6 +604,7 @@
         </div>
     </div>
 
+    <!-- Process Actions Modals -->
     <div id="issue-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 border"><h3 class="font-bold text-church-900">Physical Book Checkout</h3><p class="text-xs text-church-600">Book: <strong id="issue-modal-book"></strong></p><div class="text-xs"><label class="font-bold block mb-1">Date Issued</label><input id="issue-date-input" type="date" class="w-full p-2 border rounded-xl bg-church-50 font-bold"><label class="font-bold block mt-2 mb-1">Condition Issued</label><select id="issue-condition-select" class="w-full p-2 border rounded-xl bg-church-50"><option>Good</option><option>Old</option><option>Torn</option></select></div><div class="flex justify-end space-x-2"><button onclick="closeModal('issue-modal')" class="px-4 py-2 border rounded-xl text-xs">Cancel</button><button onclick="confirmAdminIssue()" class="px-5 py-2 bg-emerald-700 text-white rounded-xl text-xs font-bold">Confirm Checkout</button></div></div></div>
     <div id="return-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 border"><h3 class="font-bold text-church-900">Process Returned Book</h3><p class="text-xs text-church-600">Book: <strong id="return-modal-book"></strong></p><div class="text-xs"><label class="font-bold block mb-1">Return Date</label><input id="return-date-input" type="date" class="w-full p-2 border rounded-xl bg-church-50 font-bold"><label class="font-bold block mt-2 mb-1">Condition Returned</label><select id="return-condition-select" class="w-full p-2 border rounded-xl bg-church-50"><option>Good / Normal</option><option>Torn / Stained</option></select><label class="font-bold block mt-2 mb-1">Penalty Warranted?</label><select id="return-penalty-select" class="w-full p-2 border rounded-xl bg-church-50"><option>None</option><option>Late Return</option><option>Damage</option></select></div><div class="flex justify-end space-x-2"><button onclick="closeModal('return-modal')" class="px-4 py-2 border rounded-xl text-xs">Cancel</button><button onclick="confirmAdminReturn()" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Complete Return</button></div></div></div>
     <div id="edit-member-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 border"><h3 class="font-bold text-church-900">Update Borrower Phone</h3><p class="text-xs text-church-600">Member: <strong id="edit-mem-name"></strong> (<span id="edit-mem-id"></span>)</p><input id="edit-mem-phone" type="text" placeholder="WhatsApp (e.g. 0712345678)" class="w-full p-2.5 border rounded-xl text-xs bg-church-50 font-bold"><div class="flex justify-end space-x-2"><button onclick="closeModal('edit-member-modal')" class="px-4 py-2 border rounded-xl text-xs">Cancel</button><button onclick="saveMemberContact()" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Save Phone</button></div></div></div>
@@ -588,7 +612,7 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js?v=6.1"></script>
+    <script src="script.js?v=6.5"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
