@@ -30,6 +30,18 @@ let currentStorageSubTab = 'stock';
 document.addEventListener('DOMContentLoaded', () => {
     updateUserAuthUI();
     updateLibrarianUI();
+    
+    // Show a loading spinner immediately so the user isn't staring at a blank screen
+    const grid = document.getElementById('book-grid');
+    if (grid) {
+        grid.innerHTML = `
+            <div class="col-span-full flex flex-col items-center justify-center py-20 text-church-600">
+                <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4"></i>
+                <p class="font-bold animate-pulse text-sm">Syncing with Library Database...</p>
+            </div>
+        `;
+    }
+
     fetchLibraryDataFromSupabase();
 
     document.getElementById('search-input')?.addEventListener('input', handleSearchAndFilter);
@@ -55,12 +67,11 @@ const mapGroup = db => ({
 
 async function fetchLibraryDataFromSupabase() {
     try {
-        const [bRes, mRes, borRes, sRes, dRes, gRes] = await Promise.all([
+        // TIER 1: Fetch ONLY what is needed for the Public UI and Login instantly
+        const [bRes, mRes, borRes, gRes] = await Promise.all([
             supabaseClient.from('books').select('*').order('id', { ascending: false }), 
             supabaseClient.from('members').select('*'),
             supabaseClient.from('borrows').select('*'), 
-            supabaseClient.from('storage_stock').select('*'),
-            supabaseClient.from('distribution_logs').select('*'),
             supabaseClient.from('group_readings').select('*')
         ]);
 
@@ -70,8 +81,6 @@ async function fetchLibraryDataFromSupabase() {
         filteredBooks = allBooks;
         allMembers = (mRes.data || []).map(mapMember);
         allBorrows = (borRes.data || []).map(mapBorrow);
-        allStorageStock = (sRes.data || []).map(mapStorage);
-        allDistributionLogs = (dRes.data || []).map(mapDist);
         allGroups = (gRes.data || []).map(mapGroup);
 
         if (currentUser) {
@@ -83,7 +92,31 @@ async function fetchLibraryDataFromSupabase() {
         updateGroupBadges();
         renderCirculationCounts();
         if (isLibrarianActive) renderAdminTables();
-    } catch (err) { console.warn("Fetch Error:", err.message); }
+
+        // TIER 2: Silently fetch the heavy Librarian-only data in the background
+        fetchAdminBackgroundData();
+
+    } catch (err) { 
+        console.warn("Fetch Error:", err.message); 
+        const grid = document.getElementById('book-grid');
+        if (grid) {
+            grid.innerHTML = `<div class="col-span-full text-center text-red-600 font-bold py-10">Failed to connect to the database. Please refresh the page.</div>`;
+        }
+    }
+}
+
+async function fetchAdminBackgroundData() {
+    try {
+        const [sRes, dRes] = await Promise.all([
+            supabaseClient.from('storage_stock').select('*'),
+            supabaseClient.from('distribution_logs').select('*')
+        ]);
+        allStorageStock = (sRes.data || []).map(mapStorage);
+        allDistributionLogs = (dRes.data || []).map(mapDist);
+        if (isLibrarianActive) renderStorageTables();
+    } catch (err) {
+        console.warn("Admin background fetch failed", err);
+    }
 }
 
 function normalizeBook(raw) {
@@ -278,7 +311,6 @@ function checkBorrowLimit() {
         return false;
     }
     
-    // Prevent duplicate request for the exact same book
     const alreadyRequested = activeLoans.some(b => b.BookID == activeBookForAction.id);
     if (alreadyRequested) {
         alert(`You already have an active request or loan for "${activeBookForAction.title}".`);
@@ -618,7 +650,6 @@ async function submitDistributionRecord() {
     i.TotalDistributed += q; i.RemainingStock -= q; allDistributionLogs.unshift(mapDist(obj)); closeModal('storage-distribute-modal'); renderStorageTables(); alert("Distributed!");
 }
 
-// ---------------- MEMBERS MANAGEMENT ----------------
 function renderMembersTable() { const tb = document.getElementById('admin-members-tbody'); if (tb) tb.innerHTML = allMembers.map(m => `<tr><td class="p-3 font-bold">${m.MemberID}</td><td class="p-3">${m.FullName}</td><td class="p-3">${m.Designation}</td><td class="p-3">${m.Phone}</td><td class="p-3 text-right"><button onclick="openEditMemberModal('${m.MemberID}')" class="text-church-700 underline font-bold text-xs">Edit Phone</button></td></tr>`).join(''); }
 async function adminRegisterMember() {
     const obj = { member_id: document.getElementById('new-mem-id').value.trim().toUpperCase(), full_name: document.getElementById('new-mem-name').value.trim(), designation: document.getElementById('new-mem-desig').value, phone: document.getElementById('new-mem-phone').value.trim() };
