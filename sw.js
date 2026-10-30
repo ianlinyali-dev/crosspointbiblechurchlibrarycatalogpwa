@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cbc-library-v2';
+const CACHE_NAME = 'cbc-library-v6';
 const ASSETS_TO_CACHE = [
   './index.html',
   './style.css',
