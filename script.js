@@ -182,6 +182,27 @@ function updateUserAuthUI() {
     if (d) d.innerHTML = h; if (m) m.innerHTML = h;
 }
 
+// ---------------- EXPORT PUBLIC CATALOG ----------------
+function exportPublicCatalogCSV() {
+    if (allBooks.length === 0) { alert("The catalog is currently empty or loading."); return; }
+    
+    const headers = ["Book ID", "Title", "Author", "Category", "Pages", "Access Rule"];
+    const rows = allBooks.map(b => [
+        `"${b.id}"`, `"${b.title.replace(/"/g, '""')}"`, `"${b.author.replace(/"/g, '""')}"`, 
+        `"${b.category}"`, `"${b.pages}"`, `"${b.classification}"`
+    ]);
+    
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\r\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `CBC_Library_Catalog_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+
 // ---------------- BOOK, BORROW & ONSITE MODALS ----------------
 function openBookModal(book) {
     activeBookForAction = book;
@@ -241,7 +262,35 @@ async function loginMember() {
 
 function logoutUser() { localStorage.removeItem('cbc_user'); currentUser = null; updateUserAuthUI(); }
 
+// ---------------- BORROW LIMIT ENFORCEMENT ----------------
+function checkBorrowLimit() {
+    if (!currentUser) return false;
+    
+    const activeLoans = allBorrows.filter(b => 
+        String(b.MemberID).toUpperCase() === String(currentUser.id).toUpperCase() && 
+        ['Pending', 'Approved', 'Active'].includes(b.Status)
+    );
+    
+    const limit = (currentUser.designation || '').toLowerCase() === 'pastor' ? 4 : 2;
+    
+    if (activeLoans.length >= limit) {
+        alert(`BORROWING LIMIT REACHED:\n\nYou already have ${activeLoans.length} active or pending request(s).\nThe maximum limit is ${limit} books for ${currentUser.designation}s.\n\nPlease return existing books before requesting new ones.`);
+        return false;
+    }
+    
+    // Prevent duplicate request for the exact same book
+    const alreadyRequested = activeLoans.some(b => b.BookID == activeBookForAction.id);
+    if (alreadyRequested) {
+        alert(`You already have an active request or loan for "${activeBookForAction.title}".`);
+        return false;
+    }
+    
+    return true;
+}
+
 function openBorrowForm() {
+    if (!checkBorrowLimit()) return;
+    
     closeModal('book-modal');
     document.getElementById('borrow-book-title').textContent = activeBookForAction.title;
     const today = new Date().toISOString().split('T')[0];
@@ -272,6 +321,8 @@ async function submitBorrowRequest() {
 }
 
 function openOnsiteScheduleForm() {
+    if (!checkBorrowLimit()) return;
+    
     closeModal('book-modal');
     document.getElementById('onsite-book-title').textContent = activeBookForAction.title;
     const today = new Date().toISOString().split('T')[0];
@@ -373,7 +424,7 @@ async function joinGroupReading(id) {
     closeModal('group-modal'); closeModal('all-groups-modal'); updateGroupBadges(); initCatalog(); alert("Successfully joined the group!");
 }
 
-// ---------------- LIBRARIAN ----------------
+// ---------------- LIBRARIAN CONSOLE ----------------
 function openAdminSettingsModal() { 
     document.getElementById('setting-admin-name').value = churchLibrarySettings.adminName || '';
     document.getElementById('admin-settings-modal').classList.remove('hidden'); 
@@ -443,7 +494,7 @@ function renderCirculationTable() {
         else if (b.Status === 'Approved') btns = `<button onclick="openIssueModal('${b.BorrowID}')" class="bg-emerald-700 text-white px-2 py-1 rounded text-xs font-bold">Issue</button>`;
         else if (b.Status === 'Active') btns = `<button onclick="adminExtendLoan('${b.BorrowID}')" class="bg-church-600 text-white px-2 py-1 rounded text-xs mr-1">+2 Wks</button><button onclick="openReturnModal('${b.BorrowID}')" class="bg-black text-white px-2 py-1 rounded text-xs">Return</button>`;
 
-        return `<tr class="hover:bg-church-50 border-b"><td class="p-3 font-bold">${b.BookTitle}</td><td class="p-3">${b.MemberName}<br><span class="text-[10px] text-church-500">${b.MemberID}</span></td><td class="p-3">${b.PickupDate}</td><td class="p-3 font-bold">${b.DueDate}</td><td class="p-3 font-bold text-[10px]">${b.Status}</td><td class="p-3"><button onclick="triggerBorrowerWhatsApp('${b.MemberID}', '${b.MemberName}', '${b.BookTitle}', '${b.Status}', '${b.DueDate}')" class="text-emerald-700 border border-emerald-300 rounded px-1.5 py-0.5 text-[10px] bg-emerald-50">WhatsApp</button></td><td class="p-3 text-right">${btns}</td></tr>`;
+        return `<tr class="hover:bg-church-50 border-b"><td class="p-3 font-bold">${b.BookTitle}</td><td class="p-3">${b.MemberName}<br><span class="text-[10px] text-church-500">${b.MemberID}</span></td><td class="p-3">${b.PickupDate}</td><td class="p-3 font-bold">${b.DueDate}</td><td class="p-3 font-bold text-[10px]">${b.Status}</td><td class="p-3"><button onclick="triggerBorrowerWhatsApp('${b.MemberID}', '${b.MemberName}', '${b.BookTitle.replace(/'/g,"\\'")}', '${b.Status}', '${b.DueDate}')" class="text-emerald-700 border border-emerald-300 rounded px-1.5 py-0.5 text-[10px] bg-emerald-50">WhatsApp</button></td><td class="p-3 text-right">${btns}</td></tr>`;
     }).join('');
 }
 async function approveBorrow(id) { const { error } = await supabaseClient.from('borrows').update({ status: 'Approved' }).eq('borrow_id', id); if (!error) { const b = allBorrows.find(x => x.BorrowID === id); if (b) b.Status = 'Approved'; renderAdminTables(); initCatalog(); } }
@@ -458,9 +509,24 @@ function openAddBookModal() { document.getElementById('add-book-modal').classLis
 async function submitNewBook() {
     const title = document.getElementById('add-book-title').value.trim();
     if (!title) { alert("Title is required."); return; }
-    const obj = { title: title, author: document.getElementById('add-book-author').value.trim() || 'Unknown', category: document.getElementById('add-book-category').value, classification: document.getElementById('add-book-class').value, copies: parseInt(document.getElementById('add-book-copies').value) || 1, pages: parseInt(document.getElementById('add-book-pages').value) || 200, description: document.getElementById('add-book-desc').value.trim(), image: document.getElementById('add-book-img').value.trim() || 'images/churchdiscipline.jpeg' };
+    
+    const maxId = allBooks.length > 0 ? Math.max(...allBooks.map(b => parseInt(b.id))) : 0;
+    
+    const obj = {
+        id: maxId + 1,
+        title: title,
+        author: document.getElementById('add-book-author').value.trim() || 'Unknown',
+        category: document.getElementById('add-book-category').value,
+        classification: document.getElementById('add-book-class').value,
+        copies: parseInt(document.getElementById('add-book-copies').value) || 1,
+        pages: parseInt(document.getElementById('add-book-pages').value) || 200,
+        description: document.getElementById('add-book-desc').value.trim(),
+        image: document.getElementById('add-book-img').value.trim() || 'images/churchdiscipline.jpeg'
+    };
+
     const { error } = await supabaseClient.from('books').insert([obj]);
     if (error) { alert("Error adding book: " + error.message); return; }
+
     document.getElementById('add-book-title').value = ''; document.getElementById('add-book-author').value = ''; document.getElementById('add-book-desc').value = '';
     closeModal('add-book-modal'); alert("Book successfully added to Catalog!"); fetchLibraryDataFromSupabase();
 }
@@ -488,7 +554,7 @@ async function deleteBook(id) {
     alert("Book removed from catalog!"); fetchLibraryDataFromSupabase();
 }
 
-// ---------------- STOCK, STORAGE & MEMBERS ----------------
+// ---------------- STOCK & STORAGE ----------------
 function renderStockAuditTable() {
     const tb = document.getElementById('stock-audit-tbody'); if (!tb) return;
     let tc = 0, tl = 0, ta = 0;
@@ -552,6 +618,7 @@ async function submitDistributionRecord() {
     i.TotalDistributed += q; i.RemainingStock -= q; allDistributionLogs.unshift(mapDist(obj)); closeModal('storage-distribute-modal'); renderStorageTables(); alert("Distributed!");
 }
 
+// ---------------- MEMBERS MANAGEMENT ----------------
 function renderMembersTable() { const tb = document.getElementById('admin-members-tbody'); if (tb) tb.innerHTML = allMembers.map(m => `<tr><td class="p-3 font-bold">${m.MemberID}</td><td class="p-3">${m.FullName}</td><td class="p-3">${m.Designation}</td><td class="p-3">${m.Phone}</td><td class="p-3 text-right"><button onclick="openEditMemberModal('${m.MemberID}')" class="text-church-700 underline font-bold text-xs">Edit Phone</button></td></tr>`).join(''); }
 async function adminRegisterMember() {
     const obj = { member_id: document.getElementById('new-mem-id').value.trim().toUpperCase(), full_name: document.getElementById('new-mem-name').value.trim(), designation: document.getElementById('new-mem-desig').value, phone: document.getElementById('new-mem-phone').value.trim() };
@@ -581,12 +648,12 @@ function applyAnalyticsTimelineFilter() {
         return true;
     });
 
-    document.getElementById('stat-period-borrows').textContent = filtered.length;
-    document.getElementById('stat-total-members').textContent = allMembers.length;
+    if(document.getElementById('stat-period-borrows')) document.getElementById('stat-period-borrows').textContent = filtered.length;
+    if(document.getElementById('stat-total-members')) document.getElementById('stat-total-members').textContent = allMembers.length;
 
     const counts = {}; filtered.forEach(b => { counts[b.BookTitle] = (counts[b.BookTitle] || 0) + 1; });
     let topBook = "None", max = 0; for (let t in counts) { if (counts[t] > max) { max = counts[t]; topBook = t; } }
-    document.getElementById('stat-top-book').textContent = topBook;
+    if(document.getElementById('stat-top-book')) document.getElementById('stat-top-book').textContent = topBook;
 
     const tb = document.getElementById('analytics-borrows-tbody');
     if (tb) {
@@ -615,18 +682,18 @@ function exportAnalyticsCSV() {
     const headers = ["Borrow ID", "Book Title", "Category", "Borrower Name", "Borrower ID", "Pickup Date", "Due Date", "Return Date", "Status"];
     const rows = filtered.map(b => {
         const book = allBooks.find(bk => bk.id == b.BookID);
-        return [`"${b.BorrowID}"`, `"${b.BookTitle}"`, `"${book ? book.category : 'Unknown'}"`, `"${b.MemberName}"`, `"${b.MemberID}"`, `"${b.PickupDate}"`, `"${b.DueDate}"`, `"${b.ReturnDate || ''}"`, `"${b.Status}"`];
+        return [`"${b.BorrowID}"`, `"${b.BookTitle.replace(/"/g, '""')}"`, `"${book ? book.category : 'Unknown'}"`, `"${b.MemberName}"`, `"${b.MemberID}"`, `"${b.PickupDate}"`, `"${b.DueDate}"`, `"${b.ReturnDate || ''}"`, `"${b.Status}"`];
     });
 
     const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\r\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", url); link.setAttribute("download", `CBC_Library_Report_${new Date().toISOString().split('T')[0]}.csv`);
+    link.href = url; link.download = `CBC_Borrow_Analytics_Report_${new Date().toISOString().split('T')[0]}.csv`;
     document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
 }
 
-// ---------------- EVENT LISTENERS ----------------
+// Global Modal Closer
 function closeModal(id) { document.getElementById(id)?.classList.add('hidden'); }
 window.addEventListener('click', (e) => { 
     ['login-modal', 'book-modal', 'borrow-modal', 'onsite-modal', 'admin-pin-modal', 'add-book-modal', 'edit-book-modal', 'storage-intake-modal', 'storage-distribute-modal', 'issue-modal', 'return-modal', 'edit-member-modal', 'my-requests-modal', 'create-group-modal', 'group-modal', 'all-groups-modal', 'admin-settings-modal'].forEach(id => { 
