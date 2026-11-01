@@ -2,7 +2,7 @@
 <html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Crosspoint Bible Church Library | Nakuru</title>
     
     <link rel="icon" type="image/png" href="logo.png">
@@ -28,26 +28,39 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-church-50 text-church-900 font-sans antialiased flex flex-col min-h-screen">
+<body class="bg-church-50 text-church-900 font-sans antialiased flex flex-col min-h-screen overflow-x-hidden">
+
+    <!-- PWA Update Notification Banner -->
+    <div id="pwa-update-banner" class="fixed bottom-4 right-4 z-[100] hidden bg-church-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-4 animate-bounce border border-church-700">
+        <div class="text-xs">
+            <p class="font-bold text-amber-400">Update Available!</p>
+            <p class="text-church-200">A new version of the app is ready.</p>
+        </div>
+        <button onclick="applyPwaUpdate()" class="bg-amber-500 hover:bg-amber-600 text-church-900 px-3 py-1.5 rounded-lg text-xs font-bold transition shadow">Reload</button>
+        <button onclick="document.getElementById('pwa-update-banner').classList.add('hidden')" class="text-church-400 hover:text-white">&times;</button>
+    </div>
 
     <header class="bg-white border-b border-church-200 sticky top-0 z-40 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             <div class="flex items-center space-x-3.5">
-                <div class="w-12 h-12 bg-white border border-church-200 rounded-xl flex items-center justify-center p-1 shadow-sm overflow-hidden">
+                <div class="w-12 h-12 bg-white border border-church-200 rounded-xl flex items-center justify-center p-1 shadow-sm overflow-hidden shrink-0">
                     <img src="logo.png" alt="Crosspoint Bible Church Logo" class="w-full h-full object-contain">
                 </div>
-                <div>
-                    <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-church-900 leading-tight">Crosspoint Bible Church</h1>
-                    <p class="text-[11px] text-church-600 font-semibold tracking-wider uppercase">Library Catalogue • Kiamunyi, Nakuru</p>
+                <div class="min-w-0">
+                    <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-church-900 leading-tight truncate">Crosspoint Bible Church</h1>
+                    <p class="text-[10px] sm:text-[11px] text-church-600 font-semibold tracking-wider uppercase truncate">Library Catalogue • Nakuru</p>
                 </div>
             </div>
 
             <nav class="hidden md:flex items-center space-x-6 text-sm font-medium">
+                <!-- Hidden Install Button for Desktop -->
+                <button id="install-app-btn-desktop" onclick="installPWA()" class="hidden bg-emerald-700 hover:bg-emerald-800 text-white text-xs px-3 py-1.5 rounded-xl font-bold transition flex items-center space-x-1.5 shadow-sm">
+                    <i class="fa-solid fa-download"></i><span>Install App</span>
+                </button>
                 <a href="#catalog" class="hover:text-church-600 transition-colors">Catalog</a>
                 <button onclick="openAllGroupsModal()" class="hover:text-church-600 transition-colors flex items-center gap-1.5 font-bold text-amber-800">
                     <i class="fa-solid fa-users"></i> Group Reading (<span id="nav-group-count">0</span>)
                 </button>
-                <a href="#about-reading" class="hover:text-church-600 transition-colors">Why Read?</a>
                 <div id="user-auth-badge"></div>
                 <button id="btn-librarian-toggle" onclick="openAdminPinModal()" class="border border-church-300 hover:border-church-700 text-church-800 text-xs px-3 py-2 rounded-xl font-medium transition flex items-center space-x-1.5 shadow-sm">
                     <i class="fa-solid fa-lock text-[11px]"></i>
@@ -62,12 +75,15 @@
 
         <div id="mobile-menu" class="hidden md:hidden bg-white border-b border-church-200 px-4 pt-2 pb-4 space-y-3">
             <div id="mobile-user-auth-badge" class="pb-2 border-b border-church-100"></div>
+            <!-- Hidden Install Button for Mobile -->
+            <button id="install-app-btn-mobile" onclick="installPWA()" class="hidden w-full text-left py-2 text-emerald-700 font-bold hover:bg-church-50 rounded px-2 flex items-center justify-between border border-emerald-200 bg-emerald-50 mb-2">
+                <span><i class="fa-solid fa-download mr-1"></i> Install App</span>
+            </button>
             <a href="#catalog" onclick="document.getElementById('mobile-menu').classList.add('hidden')" class="block py-2 text-church-900 hover:bg-church-50 rounded px-2 font-medium">Catalog</a>
             <button onclick="openAllGroupsModal(); document.getElementById('mobile-menu').classList.add('hidden')" class="w-full text-left py-2 text-amber-800 font-bold hover:bg-church-50 rounded px-2 flex items-center justify-between">
                 <span><i class="fa-solid fa-users mr-1"></i> Group Reading Circles</span>
                 <span class="bg-amber-100 text-amber-900 text-xs px-2 py-0.5 rounded-full" id="mobile-nav-group-count">0</span>
             </button>
-            <a href="#about-reading" onclick="document.getElementById('mobile-menu').classList.add('hidden')" class="block py-2 text-church-900 hover:bg-church-50 rounded px-2 font-medium">Why Read?</a>
             <div class="pt-2 border-t border-church-100">
                 <button onclick="openAdminPinModal(); document.getElementById('mobile-menu').classList.add('hidden')" class="w-full text-left py-2 text-church-800 font-semibold px-2 flex items-center gap-2">
                     <i class="fa-solid fa-shield-halved text-amber-700"></i> Librarian Terminal
@@ -144,12 +160,12 @@
             <!-- 5 Toggle Tabs -->
             <div class="flex flex-wrap gap-2 border-b border-church-200 pb-2">
                 <button id="tab-btn-circulation" onclick="switchAdminTab('circulation')" class="admin-tab-btn active px-4 py-2 rounded-xl text-xs font-bold bg-church-800 text-white shadow-sm">
-                    Circulation Desk <span id="badge-pending-count" class="bg-amber-500 text-white px-1.5 py-0.2 rounded-full text-[10px]">0</span>
+                    Circulation <span id="badge-pending-count" class="bg-amber-500 text-white px-1.5 py-0.2 rounded-full text-[10px]">0</span>
                 </button>
-                <button id="tab-btn-stock" onclick="switchAdminTab('stock')" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Catalog Stock</button>
-                <button id="tab-btn-storage" onclick="switchAdminTab('storage')" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Storage & Dist.</button>
+                <button id="tab-btn-stock" onclick="switchAdminTab('stock')" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Stock</button>
+                <button id="tab-btn-storage" onclick="switchAdminTab('storage')" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Storage</button>
                 <button id="tab-btn-members" onclick="switchAdminTab('members')" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Members</button>
-                <button id="tab-btn-analytics" onclick="switchAdminTab('analytics')" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Borrow Reports</button>
+                <button id="tab-btn-analytics" onclick="switchAdminTab('analytics')" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Reports</button>
             </div>
 
             <!-- WINDOW 1: CIRCULATION DESK -->
@@ -162,9 +178,9 @@
                     <button onclick="filterCirculationStatus('Returned')" class="circ-filter-btn text-xs px-3 py-1.5 rounded-lg bg-church-100 font-bold">Returned</button>
                 </div>
                 <div class="overflow-x-auto border border-church-200 rounded-2xl">
-                    <table class="w-full text-left text-xs border-collapse">
+                    <table class="w-full text-left text-xs border-collapse bg-white">
                         <thead class="bg-church-100 text-church-800 uppercase font-semibold text-[11px]">
-                            <tr><th class="p-3">Book Title</th><th class="p-3">Borrower Details</th><th class="p-3">Due Date</th><th class="p-3">Stage</th><th class="p-3">Contact</th><th class="p-3 text-right">Actions</th></tr>
+                            <tr><th class="p-3 whitespace-nowrap">Book Title</th><th class="p-3 whitespace-nowrap">Borrower Details</th><th class="p-3 whitespace-nowrap">Due Date</th><th class="p-3 whitespace-nowrap">Stage</th><th class="p-3 whitespace-nowrap">Contact</th><th class="p-3 text-right whitespace-nowrap">Actions</th></tr>
                         </thead>
                         <tbody id="admin-borrows-tbody" class="divide-y divide-church-100"></tbody>
                     </table>
@@ -180,7 +196,7 @@
                         <p id="stock-kpi-titles" class="text-2xl font-black text-church-900 mt-1">0</p>
                     </div>
                     <div class="bg-church-50 p-4 rounded-2xl border border-church-200">
-                        <p class="text-[11px] uppercase font-bold text-church-600">Total Physical Copies</p>
+                        <p class="text-[11px] uppercase font-bold text-church-600">Total Copies</p>
                         <p id="stock-kpi-total-copies" class="text-2xl font-black text-church-900 mt-1">0</p>
                     </div>
                     <div class="bg-church-50 p-4 rounded-2xl border border-church-200">
@@ -188,7 +204,7 @@
                         <p id="stock-kpi-loaned" class="text-2xl font-black text-amber-700 mt-1">0</p>
                     </div>
                     <div class="bg-church-50 p-4 rounded-2xl border border-church-200">
-                        <p class="text-[11px] uppercase font-bold text-emerald-800">Available on Shelves</p>
+                        <p class="text-[11px] uppercase font-bold text-emerald-800">Avail. on Shelves</p>
                         <p id="stock-kpi-available" class="text-2xl font-black text-emerald-700 mt-1">0</p>
                     </div>
                 </div>
@@ -201,7 +217,6 @@
                             <button onclick="openAddBookModal()" class="bg-purple-700 hover:bg-purple-800 text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow"><i class="fa-solid fa-book-medical mr-1"></i> Add Book</button>
                         </div>
                     </div>
-                    <!-- Detailed Stock Filters -->
                     <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
                         <div>
                             <label class="block font-semibold mb-1 text-church-700">Search Title / Author</label>
@@ -241,7 +256,7 @@
                 <div class="overflow-x-auto border border-church-200 rounded-2xl bg-white">
                     <table class="w-full text-left text-xs border-collapse">
                         <thead class="bg-church-100 text-church-800 uppercase font-semibold text-[11px]">
-                            <tr><th class="p-3">ID</th><th class="p-3">Title & Author</th><th class="p-3">Category</th><th class="p-3">Access</th><th class="p-3 text-center">Copies</th><th class="p-3 text-center text-amber-900">On Loan</th><th class="p-3 text-center text-emerald-900">On Shelf</th><th class="p-3 text-center">Status</th><th class="p-3 text-right">Actions</th></tr>
+                            <tr><th class="p-3 whitespace-nowrap">ID</th><th class="p-3 whitespace-nowrap min-w-[150px]">Title & Author</th><th class="p-3 whitespace-nowrap">Category</th><th class="p-3 whitespace-nowrap">Access</th><th class="p-3 text-center whitespace-nowrap">Copies</th><th class="p-3 text-center text-amber-900 whitespace-nowrap">On Loan</th><th class="p-3 text-center text-emerald-900 whitespace-nowrap">On Shelf</th><th class="p-3 text-center whitespace-nowrap">Status</th><th class="p-3 text-right whitespace-nowrap">Actions</th></tr>
                         </thead>
                         <tbody id="stock-audit-tbody" class="divide-y divide-church-100"></tbody>
                     </table>
@@ -272,7 +287,7 @@
                 <div id="storage-view-stock" class="overflow-x-auto border border-church-200 rounded-2xl bg-white">
                     <table class="w-full text-left text-xs border-collapse">
                         <thead class="bg-church-100 text-church-800 uppercase font-semibold text-[11px]">
-                            <tr><th class="p-3">ID</th><th class="p-3">Title & Author</th><th class="p-3">Source</th><th class="p-3">Date</th><th class="p-3 text-center">Received</th><th class="p-3 text-center">Dist.</th><th class="p-3 text-center text-emerald-800">In Storage</th><th class="p-3 text-right">Quick Dist.</th></tr>
+                            <tr><th class="p-3 whitespace-nowrap">ID</th><th class="p-3 whitespace-nowrap min-w-[150px]">Title & Author</th><th class="p-3 whitespace-nowrap">Source</th><th class="p-3 whitespace-nowrap">Date</th><th class="p-3 text-center whitespace-nowrap">Received</th><th class="p-3 text-center whitespace-nowrap">Dist.</th><th class="p-3 text-center text-emerald-800 whitespace-nowrap">In Storage</th><th class="p-3 text-right whitespace-nowrap">Quick Dist.</th></tr>
                         </thead>
                         <tbody id="storage-stock-tbody" class="divide-y divide-church-100"></tbody>
                     </table>
@@ -280,7 +295,7 @@
                 <div id="storage-view-dist" class="hidden overflow-x-auto border border-church-200 rounded-2xl bg-white">
                     <table class="w-full text-left text-xs border-collapse">
                         <thead class="bg-church-100 text-church-800 uppercase font-semibold text-[11px]">
-                            <tr><th class="p-3">Log ID</th><th class="p-3">Book Title</th><th class="p-3">Recipient</th><th class="p-3 text-center">Qty</th><th class="p-3">Date</th><th class="p-3">Notes</th></tr>
+                            <tr><th class="p-3 whitespace-nowrap">Log ID</th><th class="p-3 whitespace-nowrap">Book Title</th><th class="p-3 whitespace-nowrap">Recipient</th><th class="p-3 text-center whitespace-nowrap">Qty</th><th class="p-3 whitespace-nowrap">Date</th><th class="p-3 whitespace-nowrap">Notes</th></tr>
                         </thead>
                         <tbody id="storage-dist-tbody" class="divide-y divide-church-100"></tbody>
                     </table>
@@ -323,18 +338,18 @@
                 <div class="overflow-x-auto border border-church-200 rounded-2xl">
                     <table class="w-full text-left text-xs border-collapse bg-white">
                         <thead class="bg-church-100 text-church-800 uppercase font-semibold text-[11px]">
-                            <tr><th class="p-3">Member ID</th><th class="p-3">Full Name</th><th class="p-3">Designation</th><th class="p-3">Phone</th><th class="p-3 text-right">Actions</th></tr>
+                            <tr><th class="p-3 whitespace-nowrap">Member ID</th><th class="p-3 whitespace-nowrap">Full Name</th><th class="p-3 whitespace-nowrap">Designation</th><th class="p-3 whitespace-nowrap">Phone</th><th class="p-3 text-right whitespace-nowrap">Actions</th></tr>
                         </thead>
                         <tbody id="admin-members-tbody" class="divide-y divide-church-100"></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- WINDOW 5: ANALYTICS & REPORTS (Now dedicated just to Borrows) -->
+            <!-- WINDOW 5: ANALYTICS & REPORTS -->
             <div id="admin-window-analytics" class="hidden space-y-6">
                 <div class="bg-church-50 p-4 rounded-2xl border border-church-200 space-y-3">
                     <div class="flex items-center justify-between border-b pb-2">
-                        <h3 class="text-xs font-bold text-church-900 uppercase">Track & Filter Borrowed Books</h3>
+                        <h3 class="text-xs font-bold text-church-900 uppercase">Track Borrowed Books</h3>
                         <button onclick="exportAnalyticsCSV()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow-sm transition"><i class="fa-solid fa-file-excel mr-1"></i> Export Report</button>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 text-xs">
@@ -366,13 +381,12 @@
                 <div class="overflow-x-auto border border-church-200 rounded-2xl bg-white">
                     <table class="w-full text-left text-xs border-collapse">
                         <thead class="bg-church-100 text-church-800 uppercase font-semibold text-[11px]">
-                            <tr><th class="p-3">Book Title</th><th class="p-3">Borrower</th><th class="p-3">Pickup Date</th><th class="p-3">Due Date</th><th class="p-3">Status</th></tr>
+                            <tr><th class="p-3 whitespace-nowrap">Book Title</th><th class="p-3 whitespace-nowrap">Borrower</th><th class="p-3 whitespace-nowrap">Pickup Date</th><th class="p-3 whitespace-nowrap">Due Date</th><th class="p-3 whitespace-nowrap">Status</th></tr>
                         </thead>
                         <tbody id="analytics-borrows-tbody" class="divide-y divide-church-100"></tbody>
                     </table>
                 </div>
             </div>
-
         </div>
     </section>
 
@@ -383,7 +397,6 @@
 
     <!-- ==================== MODALS ==================== -->
 
-    <!-- Add Book Modal -->
     <div id="add-book-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border">
             <h3 class="text-base font-bold text-church-900"><i class="fa-solid fa-book-medical text-purple-700"></i> Add Book to Catalog</h3>
@@ -416,7 +429,6 @@
         </div>
     </div>
 
-    <!-- Edit Book Modal -->
     <div id="edit-book-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border">
             <h3 class="text-base font-bold text-church-900"><i class="fa-solid fa-pen-to-square text-blue-600"></i> Edit Book Details</h3>
@@ -450,7 +462,6 @@
         </div>
     </div>
 
-    <!-- Login Modal -->
     <div id="login-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl border">
             <h3 class="text-base font-extrabold text-church-900">Member Sign In</h3>
@@ -461,7 +472,6 @@
         </div>
     </div>
 
-    <!-- Librarian PIN Modal -->
     <div id="admin-pin-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl border">
             <h3 class="text-base font-extrabold text-church-900 text-center">Librarian Access</h3>
@@ -470,7 +480,6 @@
         </div>
     </div>
     
-    <!-- Admin Settings Modal -->
     <div id="admin-settings-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl border">
             <h3 class="text-base font-bold text-church-900"><i class="fa-solid fa-gear text-church-700 mr-1"></i> Library Admin Settings</h3>
@@ -481,7 +490,6 @@
         </div>
     </div>
 
-    <!-- BOOK Details Modal -->
     <div id="book-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border">
             <div class="bg-church-100 px-6 py-4 flex items-center justify-between border-b">
@@ -510,7 +518,6 @@
         </div>
     </div>
 
-    <!-- Group Reading Modals -->
     <div id="create-group-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 border">
             <h3 class="font-bold text-church-900">Start Group Reading</h3>
@@ -541,7 +548,6 @@
         </div>
     </div>
 
-    <!-- Borrow Modal -->
     <div id="borrow-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl border">
             <h3 class="text-base font-bold text-church-900">Borrow Book Request</h3>
@@ -555,7 +561,6 @@
         </div>
     </div>
 
-    <!-- ONSITE Reading Modal -->
     <div id="onsite-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl border">
             <h3 class="text-base font-bold text-church-900">Schedule Onsite Reading</h3>
@@ -568,7 +573,6 @@
         </div>
     </div>
 
-    <!-- Storage Intake & Distribute Modals -->
     <div id="storage-intake-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border">
             <h3 class="text-base font-bold text-church-900"><i class="fa-solid fa-boxes-packing text-amber-800"></i> Stock Intake</h3>
@@ -604,20 +608,33 @@
         </div>
     </div>
 
-    <!-- Process Actions Modals -->
     <div id="issue-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 border"><h3 class="font-bold text-church-900">Physical Book Checkout</h3><p class="text-xs text-church-600">Book: <strong id="issue-modal-book"></strong></p><div class="text-xs"><label class="font-bold block mb-1">Date Issued</label><input id="issue-date-input" type="date" class="w-full p-2 border rounded-xl bg-church-50 font-bold"><label class="font-bold block mt-2 mb-1">Condition Issued</label><select id="issue-condition-select" class="w-full p-2 border rounded-xl bg-church-50"><option>Good</option><option>Old</option><option>Torn</option></select></div><div class="flex justify-end space-x-2"><button onclick="closeModal('issue-modal')" class="px-4 py-2 border rounded-xl text-xs">Cancel</button><button onclick="confirmAdminIssue()" class="px-5 py-2 bg-emerald-700 text-white rounded-xl text-xs font-bold">Confirm Checkout</button></div></div></div>
     <div id="return-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 border"><h3 class="font-bold text-church-900">Process Returned Book</h3><p class="text-xs text-church-600">Book: <strong id="return-modal-book"></strong></p><div class="text-xs"><label class="font-bold block mb-1">Return Date</label><input id="return-date-input" type="date" class="w-full p-2 border rounded-xl bg-church-50 font-bold"><label class="font-bold block mt-2 mb-1">Condition Returned</label><select id="return-condition-select" class="w-full p-2 border rounded-xl bg-church-50"><option>Good / Normal</option><option>Torn / Stained</option></select><label class="font-bold block mt-2 mb-1">Penalty Warranted?</label><select id="return-penalty-select" class="w-full p-2 border rounded-xl bg-church-50"><option>None</option><option>Late Return</option><option>Damage</option></select></div><div class="flex justify-end space-x-2"><button onclick="closeModal('return-modal')" class="px-4 py-2 border rounded-xl text-xs">Cancel</button><button onclick="confirmAdminReturn()" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Complete Return</button></div></div></div>
     <div id="edit-member-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 border"><h3 class="font-bold text-church-900">Update Borrower Phone</h3><p class="text-xs text-church-600">Member: <strong id="edit-mem-name"></strong> (<span id="edit-mem-id"></span>)</p><input id="edit-mem-phone" type="text" placeholder="WhatsApp (e.g. 0712345678)" class="w-full p-2.5 border rounded-xl text-xs bg-church-50 font-bold"><div class="flex justify-end space-x-2"><button onclick="closeModal('edit-member-modal')" class="px-4 py-2 border rounded-xl text-xs">Cancel</button><button onclick="saveMemberContact()" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Save Phone</button></div></div></div>
     <div id="my-requests-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-xl w-full p-6 space-y-4 border"><div class="flex items-center justify-between border-b pb-3"><h3 class="font-bold text-church-900">My Borrow Requests & Loans</h3><button onclick="closeModal('my-requests-modal')" class="text-lg font-bold">&times;</button></div><div id="my-requests-list" class="max-h-[60vh] overflow-y-auto space-y-2 text-xs"></div><div class="flex justify-end pt-2"><button onclick="closeModal('my-requests-modal')" class="px-4 py-2 bg-church-800 text-white rounded-xl text-xs font-semibold">Close</button></div></div></div>
 
-    <!-- Scripts -->
+    <!-- Scripts (PWA + App logic) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js?v=6.5"></script>
+    <script src="script.js?v=7.0"></script>
     <script>
+        let newWorker;
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').catch(() => {});
+                navigator.serviceWorker.register('./sw.js').then(reg => {
+                    reg.addEventListener('updatefound', () => {
+                        newWorker = reg.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                document.getElementById('pwa-update-banner').classList.remove('hidden');
+                            }
+                        });
+                    });
+                }).catch(() => {});
             });
+        }
+        function applyPwaUpdate() {
+            if (newWorker) newWorker.postMessage({ type: 'SKIP_WAITING' });
+            window.location.reload();
         }
     </script>
 </body>
