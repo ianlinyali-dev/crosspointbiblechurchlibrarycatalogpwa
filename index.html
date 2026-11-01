@@ -359,10 +359,12 @@
                             <select id="analytics-category" class="w-full p-2 border rounded-xl bg-white">
                                 <option value="">All Categories</option>
                                 <option value="Systematic Theology">Systematic Theology</option>
+                                <option value="Biblical Theology">Biblical Theology</option>
                                 <option value="Commentaries">Commentaries</option>
                                 <option value="Practical Theology">Practical Theology</option>
                                 <option value="Practical Living">Practical Living</option>
                                 <option value="Bibles">Bibles</option>
+                                <option value="Ethics">Ethics</option>
                             </select>
                         </div>
                         <div><label class="block font-semibold mb-1 text-church-700">Search Query</label><input id="analytics-search-query" type="text" placeholder="Title or Borrower" class="w-full p-2 border rounded-xl bg-white"></div>
@@ -386,11 +388,9 @@
                     </table>
                 </div>
             </div>
-
         </div>
     </section>
 
-    <!-- Footer -->
     <footer id="about-us" class="bg-church-900 text-church-100 pt-12 pb-8 mt-auto">
         <div class="max-w-7xl mx-auto px-4 text-center text-xs text-church-400">&copy; Crosspoint Bible Church Library. Built for the glory of God.</div>
     </footer>
@@ -402,37 +402,29 @@
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border">
             <h3 class="text-base font-bold text-church-900"><i class="fa-solid fa-book-medical text-purple-700"></i> Add Book to Catalog</h3>
             <div class="space-y-2 text-xs">
-                <label class="font-bold">Book Title</label><input id="add-book-title" type="text" placeholder="Title" class="w-full p-2 border rounded-xl bg-church-50 font-bold">
-                <label class="font-bold">Author</label><input id="add-book-author" type="text" placeholder="Author" class="w-full p-2 border rounded-xl bg-church-50">
+                <input id="add-book-title" type="text" placeholder="Book Title" class="w-full p-2 border rounded-xl bg-church-50 font-bold">
+                <input id="add-book-author" type="text" placeholder="Author" class="w-full p-2 border rounded-xl bg-church-50">
                 <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="font-bold">Category</label>
-                        <select id="add-book-category" class="w-full p-2 border rounded-xl bg-church-50">
-                            <option value="Systematic Theology">Systematic Theology</option>
-                            <option value="Biblical Theology">Biblical Theology</option>
-                            <option value="Commentaries">Commentaries</option>
-                            <option value="Practical Theology">Practical Theology</option>
-                            <option value="Practical Living">Practical Living</option>
-                            <option value="Bibles">Bibles</option>
-                            <option value="Ethics">Ethics</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="font-bold">Access Rule</label>
-                        <select id="add-book-class" class="w-full p-2 border rounded-xl bg-church-50">
-                            <option value="Borrowable">Borrowable</option>
-                            <option value="Onsite Only">Onsite Only</option>
-                        </select>
-                    </div>
+                    <select id="add-book-category" class="w-full p-2 border rounded-xl bg-church-50">
+                        <option value="Systematic Theology">Systematic Theology</option>
+                        <option value="Biblical Theology">Biblical Theology</option>
+                        <option value="Commentaries">Commentaries</option>
+                        <option value="Practical Theology">Practical Theology</option>
+                        <option value="Practical Living">Practical Living</option>
+                        <option value="Bibles">Bibles</option>
+                        <option value="Ethics">Ethics</option>
+                    </select>
+                    <select id="add-book-class" class="w-full p-2 border rounded-xl bg-church-50">
+                        <option value="Borrowable">Borrowable</option>
+                        <option value="Onsite Only">Onsite Only</option>
+                    </select>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div><label class="block font-bold mb-1">Copies</label><input id="add-book-copies" type="number" min="1" value="1" class="w-full p-2 border rounded-xl bg-church-50"></div>
                     <div><label class="block font-bold mb-1">Pages</label><input id="add-book-pages" type="number" min="1" value="200" class="w-full p-2 border rounded-xl bg-church-50"></div>
                 </div>
-                <label class="font-bold">Description</label>
                 <textarea id="add-book-desc" placeholder="Brief Description..." rows="2" class="w-full p-2 border rounded-xl bg-church-50"></textarea>
-                <label class="font-bold">Image Path</label>
-                <input id="add-book-img" type="text" placeholder="e.g. images/mybook.jpeg" value="images/churchdiscipline.jpeg" class="w-full p-2 border rounded-xl bg-church-50">
+                <input id="add-book-img" type="text" placeholder="Image Name (e.g. images/mybook.jpeg)" value="images/churchdiscipline.jpeg" class="w-full p-2 border rounded-xl bg-church-50">
             </div>
             <div class="flex justify-end space-x-2 pt-2"><button onclick="closeModal('add-book-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="submitNewBook()" class="px-5 py-2 bg-purple-700 text-white rounded-xl text-xs font-bold">Add Book</button></div>
         </div>
@@ -444,100 +436,31 @@
             <h3 class="text-base font-bold text-church-900"><i class="fa-solid fa-pen-to-square text-blue-600"></i> Edit Book Details</h3>
             <div class="space-y-2 text-xs">
                 <input type="hidden" id="edit-book-id">
-                <label class="font-bold">Book Title</label><input id="edit-book-title" type="text" placeholder="Book Title" class="w-full p-2 border rounded-xl bg-church-50 font-bold">
-                <label class="font-bold">Author</label><input id="edit-book-author" type="text" placeholder="Author" class="w-full p-2 border rounded-xl bg-church-50">
+                <input id="edit-book-title" type="text" placeholder="Book Title" class="w-full p-2 border rounded-xl bg-church-50 font-bold">
+                <input id="edit-book-author" type="text" placeholder="Author" class="w-full p-2 border rounded-xl bg-church-50">
                 <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="font-bold">Category</label>
-                        <select id="edit-book-category" class="w-full p-2 border rounded-xl bg-church-50">
-                            <option value="Systematic Theology">Systematic Theology</option>
-                            <option value="Biblical Theology">Biblical Theology</option>
-                            <option value="Commentaries">Commentaries</option>
-                            <option value="Practical Theology">Practical Theology</option>
-                            <option value="Practical Living">Practical Living</option>
-                            <option value="Bibles">Bibles</option>
-                            <option value="Ethics">Ethics</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="font-bold">Access Rule</label>
-                        <select id="edit-book-class" class="w-full p-2 border rounded-xl bg-church-50">
-                            <option value="Borrowable">Borrowable</option>
-                            <option value="Onsite Only">Onsite Only</option>
-                        </select>
-                    </div>
+                    <select id="edit-book-category" class="w-full p-2 border rounded-xl bg-church-50">
+                        <option value="Systematic Theology">Systematic Theology</option>
+                        <option value="Biblical Theology">Biblical Theology</option>
+                        <option value="Commentaries">Commentaries</option>
+                        <option value="Practical Theology">Practical Theology</option>
+                        <option value="Practical Living">Practical Living</option>
+                        <option value="Bibles">Bibles</option>
+                        <option value="Ethics">Ethics</option>
+                    </select>
+                    <select id="edit-book-class" class="w-full p-2 border rounded-xl bg-church-50">
+                        <option value="Borrowable">Borrowable</option>
+                        <option value="Onsite Only">Onsite Only</option>
+                    </select>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div><label class="block font-bold mb-1">Copies</label><input id="edit-book-copies" type="number" min="1" class="w-full p-2 border rounded-xl bg-church-50"></div>
                     <div><label class="block font-bold mb-1">Pages</label><input id="edit-book-pages" type="number" min="1" class="w-full p-2 border rounded-xl bg-church-50"></div>
                 </div>
-                <label class="font-bold">Description</label>
                 <textarea id="edit-book-desc" placeholder="Brief Description..." rows="2" class="w-full p-2 border rounded-xl bg-church-50"></textarea>
-                <label class="font-bold">Image Path</label>
-                <input id="edit-book-img" type="text" placeholder="Image Path" class="w-full p-2 border rounded-xl bg-church-50">
+                <input id="edit-book-img" type="text" placeholder="Image Name (e.g. images/mybook.jpeg)" class="w-full p-2 border rounded-xl bg-church-50">
             </div>
             <div class="flex justify-end space-x-2 pt-2"><button onclick="closeModal('edit-book-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="submitEditBook()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold">Save Changes</button></div>
-        </div>
-    </div>
-
-    <!-- Edit Storage Modal -->
-    <div id="edit-storage-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border">
-            <h3 class="text-base font-bold text-church-900"><i class="fa-solid fa-pen-to-square text-amber-800"></i> Edit Storage Item</h3>
-            <div class="space-y-2 text-xs">
-                <input type="hidden" id="edit-storage-id">
-                <label class="font-bold">Title</label><input id="edit-storage-title" type="text" placeholder="Title" class="w-full p-2 border rounded-xl bg-church-50 font-bold">
-                <label class="font-bold">Author</label><input id="edit-storage-author" type="text" placeholder="Author" class="w-full p-2 border rounded-xl bg-church-50">
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="font-bold">Category</label>
-                        <select id="edit-storage-category" class="w-full p-2 border rounded-xl bg-church-50">
-                            <option value="Evangelism">Evangelism</option>
-                            <option value="Bibles">Bibles</option>
-                            <option value="Theology">Theology</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="font-bold">Acquisition</label>
-                        <select id="edit-storage-acq-type" class="w-full p-2 border rounded-xl bg-church-50">
-                            <option value="Donation">Donation</option>
-                            <option value="Purchased">Purchased</option>
-                            <option value="Specific Sponsor">Specific Sponsor</option>
-                        </select>
-                    </div>
-                </div>
-                <label class="font-bold">Source / Donor</label><input id="edit-storage-source" type="text" placeholder="Source / Donor" class="w-full p-2 border rounded-xl bg-church-50">
-                <div class="grid grid-cols-2 gap-2">
-                    <div><label class="block font-bold">Total Received</label><input id="edit-storage-copies" type="number" min="1" class="w-full p-2 border rounded-xl bg-church-50"></div>
-                    <div><label class="block font-bold">Date Received</label><input id="edit-storage-date" type="date" class="w-full p-2 border rounded-xl bg-church-50"></div>
-                </div>
-            </div>
-            <div class="flex justify-end space-x-2 pt-2"><button onclick="closeModal('edit-storage-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="submitEditStorage()" class="px-5 py-2 bg-amber-700 hover:bg-amber-800 text-white rounded-xl text-xs font-bold">Save</button></div>
-        </div>
-    </div>
-
-    <!-- Edit Member Modal -->
-    <div id="edit-member-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 border shadow-2xl">
-            <h3 class="font-bold text-church-900 text-base"><i class="fa-solid fa-user-pen text-blue-600 mr-1"></i> Edit Member Details</h3>
-            <p class="text-xs text-church-600 border-b pb-2">Member ID: <strong id="edit-mem-id-display" class="text-church-900"></strong> <br><span class="italic text-[10px] text-red-600">*ID cannot be changed</span></p>
-            <input type="hidden" id="edit-mem-id">
-            <div class="space-y-2 text-xs">
-                <div><label class="font-bold">Full Name</label><input id="edit-mem-name" type="text" class="w-full p-2 border rounded-xl bg-church-50"></div>
-                <div>
-                    <label class="font-bold">Designation</label>
-                    <select id="edit-mem-desig" class="w-full p-2 border rounded-xl bg-church-50">
-                        <option value="Church Member">Church Member</option>
-                        <option value="Regular Attendee">Regular Attendee</option>
-                        <option value="Agano Student">Agano Student</option>
-                        <option value="Pastor">Pastor</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-                <div><label class="font-bold">WhatsApp Phone</label><input id="edit-mem-phone" type="text" class="w-full p-2 border rounded-xl bg-church-50"></div>
-            </div>
-            <div class="flex justify-end space-x-2 pt-2"><button onclick="closeModal('edit-member-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="submitEditMember()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold">Save Changes</button></div>
         </div>
     </div>
 
@@ -546,8 +469,8 @@
         <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl border">
             <h3 class="text-base font-extrabold text-church-900">Member Sign In</h3>
             <p id="login-modal-notice" class="text-xs text-church-600">Enter your Member ID and Full Name to login.</p>
-            <label class="font-bold text-xs">Member ID</label><input id="login-id" type="text" placeholder="e.g. CBC-001" class="w-full p-2.5 border rounded-xl text-sm bg-church-50 font-bold mb-2">
-            <label class="font-bold text-xs">Full Name</label><input id="login-name" type="text" placeholder="e.g. John Doe" class="w-full p-2.5 border rounded-xl text-sm bg-church-50">
+            <input id="login-id" type="text" placeholder="Member ID (e.g. CBC-001)" class="w-full p-2.5 border rounded-xl text-sm bg-church-50 font-bold">
+            <input id="login-name" type="text" placeholder="Full Name" class="w-full p-2.5 border rounded-xl text-sm bg-church-50">
             <div class="flex justify-end space-x-2 pt-2"><button onclick="closeModal('login-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="loginMember()" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Sign In</button></div>
         </div>
     </div>
@@ -611,14 +534,19 @@
         </div>
     </div>
 
-    <div id="group-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 border">
-            <h3 class="font-bold text-church-900">👥 Group Reading Session</h3>
-            <p class="text-xs text-church-600">Book: <strong id="grp-book-title"></strong></p>
-            <p class="text-xs text-church-600">Leader: <span id="grp-leader" class="font-bold"></span></p>
-            <p class="text-xs text-church-600">Capacity: <span id="grp-capacity" class="font-bold text-amber-700"></span></p>
-            <div class="bg-church-50 p-3 rounded-xl border text-xs text-church-800"><p class="font-bold mb-1">Meeting Plan:</p><p id="grp-notes"></p></div>
-            <div class="flex justify-end space-x-2"><button onclick="closeModal('group-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Close</button><button id="btn-join-group" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Join Group</button></div>
+    <!-- NEW Edit Group Modal -->
+    <div id="edit-group-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 border shadow-2xl">
+            <h3 class="font-bold text-church-900"><i class="fa-solid fa-pen-to-square text-blue-600 mr-1"></i>Edit Group Reading</h3>
+            <input type="hidden" id="edit-grp-id">
+            <label class="text-xs font-bold">Max Participants</label>
+            <input id="edit-grp-limit" type="number" min="2" max="15" class="w-full p-2 border rounded-lg text-xs bg-church-50">
+            <label class="text-xs font-bold">Meeting Notes / Plan</label>
+            <textarea id="edit-grp-notes" rows="3" class="w-full p-2 border rounded-lg text-xs bg-church-50"></textarea>
+            <div class="flex justify-end space-x-2">
+                <button onclick="closeModal('edit-group-modal'); openAllGroupsModal();" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button>
+                <button onclick="submitEditGroup()" class="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold">Save Changes</button>
+            </div>
         </div>
     </div>
 
@@ -662,13 +590,13 @@
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border">
             <h3 class="text-base font-bold text-church-900"><i class="fa-solid fa-boxes-packing text-amber-800"></i> Stock Intake</h3>
             <div class="space-y-2 text-xs">
-                <label class="font-bold">Title</label><input id="intake-title" type="text" placeholder="e.g. Pilgrim's Progress" class="w-full p-2 border rounded-xl bg-church-50 font-bold">
-                <label class="font-bold">Author</label><input id="intake-author" type="text" placeholder="e.g. John Bunyan" class="w-full p-2 border rounded-xl bg-church-50">
+                <input id="intake-title" type="text" placeholder="Title" class="w-full p-2 border rounded-xl bg-church-50 font-bold">
+                <input id="intake-author" type="text" placeholder="Author" class="w-full p-2 border rounded-xl bg-church-50">
                 <div class="grid grid-cols-2 gap-2">
-                    <div><label class="font-bold">Category</label><select id="intake-category" class="w-full p-2 border rounded-xl bg-church-50"><option>Evangelism</option><option>Bibles</option><option>Theology</option><option>Other</option></select></div>
-                    <div><label class="font-bold">Acquisition</label><select id="intake-acq-type" class="w-full p-2 border rounded-xl bg-church-50"><option>Donation</option><option>Purchased</option><option>Specific Sponsor</option></select></div>
+                    <select id="intake-category" class="w-full p-2 border rounded-xl bg-church-50"><option>Evangelism</option><option>Bibles</option><option>Theology</option><option>Other</option></select>
+                    <select id="intake-acq-type" class="w-full p-2 border rounded-xl bg-church-50"><option>Donation</option><option>Purchased</option><option>Specific Sponsor</option></select>
                 </div>
-                <label class="font-bold">Source / Donor</label><input id="intake-source" type="text" placeholder="Funding Source / Donor" class="w-full p-2 border rounded-xl bg-church-50">
+                <input id="intake-source" type="text" placeholder="Source / Donor" class="w-full p-2 border rounded-xl bg-church-50">
                 <div class="grid grid-cols-2 gap-2">
                     <div><label class="block font-bold">Copies</label><input id="intake-copies" type="number" min="1" value="10" class="w-full p-2 border rounded-xl bg-church-50"></div>
                     <div><label class="block font-bold">Date</label><input id="intake-date" type="date" class="w-full p-2 border rounded-xl bg-church-50"></div>
@@ -678,45 +606,81 @@
         </div>
     </div>
 
-    <!-- FIXED: Record Distribution Modal -->
+    <!-- Edit Storage Modal -->
+    <div id="edit-storage-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border">
+            <h3 class="text-base font-bold text-church-900"><i class="fa-solid fa-pen-to-square text-amber-800"></i> Edit Storage Item</h3>
+            <div class="space-y-2 text-xs">
+                <input type="hidden" id="edit-storage-id">
+                <input id="edit-storage-title" type="text" placeholder="Title" class="w-full p-2 border rounded-xl bg-church-50 font-bold">
+                <input id="edit-storage-author" type="text" placeholder="Author" class="w-full p-2 border rounded-xl bg-church-50">
+                <div class="grid grid-cols-2 gap-2">
+                    <select id="edit-storage-category" class="w-full p-2 border rounded-xl bg-church-50">
+                        <option value="Evangelism">Evangelism</option>
+                        <option value="Bibles">Bibles</option>
+                        <option value="Theology">Theology</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <select id="edit-storage-acq-type" class="w-full p-2 border rounded-xl bg-church-50">
+                        <option value="Donation">Donation</option>
+                        <option value="Purchased">Purchased</option>
+                        <option value="Specific Sponsor">Specific Sponsor</option>
+                    </select>
+                </div>
+                <input id="edit-storage-source" type="text" placeholder="Source / Donor" class="w-full p-2 border rounded-xl bg-church-50">
+                <div class="grid grid-cols-2 gap-2">
+                    <div><label class="block font-bold">Total Received</label><input id="edit-storage-copies" type="number" min="1" class="w-full p-2 border rounded-xl bg-church-50"></div>
+                    <div><label class="block font-bold">Date Received</label><input id="edit-storage-date" type="date" class="w-full p-2 border rounded-xl bg-church-50"></div>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2"><button onclick="closeModal('edit-storage-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="submitEditStorage()" class="px-5 py-2 bg-amber-700 text-white rounded-xl text-xs font-bold">Save</button></div>
+        </div>
+    </div>
+
+    <!-- Record Distribute Modal -->
     <div id="storage-distribute-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border">
             <h3 class="text-base font-bold text-church-900"><i class="fa-solid fa-hand-holding-heart text-amber-800"></i> Record Book Distribution</h3>
             <div class="space-y-3 text-xs">
-                <div>
-                    <label class="font-bold block mb-1">Select Storage Book</label>
-                    <select id="dist-item-select" onchange="updateDistributionMax()" class="w-full p-2 border rounded-xl bg-church-50 font-bold"></select>
-                    <p id="dist-available-hint" class="text-[11px] text-emerald-700 font-bold mt-1"></p>
-                </div>
-                <div>
-                    <label class="font-bold block mb-1">Recipient / Ministry</label>
-                    <input id="dist-recipient" type="text" placeholder="e.g. Agano School Students" class="w-full p-2 border rounded-xl bg-church-50">
-                </div>
+                <div><label class="font-bold block mb-1">Select Storage Book</label><select id="dist-item-select" onchange="updateDistributionMax()" class="w-full p-2 border rounded-xl bg-church-50 font-bold"></select><p id="dist-available-hint" class="text-[11px] text-emerald-700 font-bold mt-1"></p></div>
+                <div><label class="font-bold block mb-1">Recipient / Ministry</label><input id="dist-recipient" type="text" placeholder="e.g. Agano School Students" class="w-full p-2 border rounded-xl bg-church-50"></div>
                 <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="font-bold block mb-1">Qty Given</label>
-                        <input id="dist-qty" type="number" min="1" value="1" class="w-full p-2 border rounded-xl bg-church-50 font-bold">
-                    </div>
-                    <div>
-                        <label class="font-bold block mb-1">Date</label>
-                        <input id="dist-date" type="date" class="w-full p-2 border rounded-xl bg-church-50">
-                    </div>
+                    <div><label class="font-bold block mb-1">Qty Given</label><input id="dist-qty" type="number" min="1" value="1" class="w-full p-2 border rounded-xl bg-church-50 font-bold"></div>
+                    <div><label class="font-bold block mb-1">Date</label><input id="dist-date" type="date" class="w-full p-2 border rounded-xl bg-church-50"></div>
                 </div>
-                <div>
-                    <label class="font-bold block mb-1">Purpose / Notes</label>
-                    <input id="dist-notes" type="text" placeholder="e.g. Outreach / Gift" class="w-full p-2 border rounded-xl bg-church-50">
-                </div>
+                <div><label class="font-bold block mb-1">Notes</label><input id="dist-notes" type="text" placeholder="Purpose / Notes" class="w-full p-2 border rounded-xl bg-church-50"></div>
             </div>
-            <div class="flex justify-end space-x-2 pt-2">
-                <button onclick="closeModal('storage-distribute-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button>
-                <button onclick="submitDistributionRecord()" class="px-5 py-2 bg-amber-700 text-white rounded-xl text-xs font-bold">Confirm Distribute</button>
-            </div>
+            <div class="flex justify-end space-x-2 pt-2"><button onclick="closeModal('storage-distribute-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="submitDistributionRecord()" class="px-5 py-2 bg-amber-700 text-white rounded-xl text-xs font-bold">Confirm Distribute</button></div>
         </div>
     </div>
 
-    <!-- Process Actions Modals -->
+    <!-- Edit Member Modal -->
+    <div id="edit-member-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 border shadow-2xl">
+            <h3 class="font-bold text-church-900 text-base"><i class="fa-solid fa-user-pen text-blue-600 mr-1"></i> Edit Member Details</h3>
+            <p class="text-xs text-church-600 border-b pb-2">Member ID: <strong id="edit-mem-id-display" class="text-church-900"></strong> <br><span class="italic text-[10px] text-red-600">*ID cannot be changed</span></p>
+            <input type="hidden" id="edit-mem-id">
+            <div class="space-y-2 text-xs">
+                <div><label class="font-bold">Full Name</label><input id="edit-mem-name" type="text" class="w-full p-2 border rounded-xl bg-church-50"></div>
+                <div>
+                    <label class="font-bold">Designation</label>
+                    <select id="edit-mem-desig" class="w-full p-2 border rounded-xl bg-church-50">
+                        <option value="Church Member">Church Member</option>
+                        <option value="Regular Attendee">Regular Attendee</option>
+                        <option value="Agano Student">Agano Student</option>
+                        <option value="Pastor">Pastor</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div><label class="font-bold">WhatsApp Phone</label><input id="edit-mem-phone" type="text" class="w-full p-2 border rounded-xl bg-church-50"></div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2"><button onclick="closeModal('edit-member-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="submitEditMember()" class="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold">Save Changes</button></div>
+        </div>
+    </div>
+
     <div id="issue-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 border"><h3 class="font-bold text-church-900">Physical Book Checkout</h3><p class="text-xs text-church-600">Book: <strong id="issue-modal-book"></strong></p><div class="text-xs"><label class="font-bold block mb-1">Date Issued</label><input id="issue-date-input" type="date" class="w-full p-2 border rounded-xl bg-church-50 font-bold"><label class="font-bold block mt-2 mb-1">Condition Issued</label><select id="issue-condition-select" class="w-full p-2 border rounded-xl bg-church-50"><option>Good</option><option>Old</option><option>Torn</option></select></div><div class="flex justify-end space-x-2"><button onclick="closeModal('issue-modal')" class="px-4 py-2 border rounded-xl text-xs">Cancel</button><button onclick="confirmAdminIssue()" class="px-5 py-2 bg-emerald-700 text-white rounded-xl text-xs font-bold">Confirm Checkout</button></div></div></div>
     <div id="return-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 border"><h3 class="font-bold text-church-900">Process Returned Book</h3><p class="text-xs text-church-600">Book: <strong id="return-modal-book"></strong></p><div class="text-xs"><label class="font-bold block mb-1">Return Date</label><input id="return-date-input" type="date" class="w-full p-2 border rounded-xl bg-church-50 font-bold"><label class="font-bold block mt-2 mb-1">Condition Returned</label><select id="return-condition-select" class="w-full p-2 border rounded-xl bg-church-50"><option>Good / Normal</option><option>Torn / Stained</option></select><label class="font-bold block mt-2 mb-1">Penalty Warranted?</label><select id="return-penalty-select" class="w-full p-2 border rounded-xl bg-church-50"><option>None</option><option>Late Return</option><option>Damage</option></select></div><div class="flex justify-end space-x-2"><button onclick="closeModal('return-modal')" class="px-4 py-2 border rounded-xl text-xs">Cancel</button><button onclick="confirmAdminReturn()" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Complete Return</button></div></div></div>
+    
     <div id="my-requests-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-xl w-full p-6 space-y-4 border"><div class="flex items-center justify-between border-b pb-3"><h3 class="font-bold text-church-900">My Borrow Requests & Loans</h3><button onclick="closeModal('my-requests-modal')" class="text-lg font-bold">&times;</button></div><div id="my-requests-list" class="max-h-[60vh] overflow-y-auto space-y-2 text-xs"></div><div class="flex justify-end pt-2"><button onclick="closeModal('my-requests-modal')" class="px-4 py-2 bg-church-800 text-white rounded-xl text-xs font-semibold">Close</button></div></div></div>
 
     <!-- Scripts (PWA + App logic) -->
