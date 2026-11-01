@@ -73,7 +73,7 @@ const mapBorrow = db => ({
     Status: db.status, ConditionIssued: db.condition_issued
 });
 const mapStorage = db => ({
-    ItemID: db.item_id, Title: db.title, Author: db.author, AcquisitionType: db.acquisition_type, Source: db.source, 
+    ItemID: db.item_id, Title: db.title, Author: db.author, Category: db.category, AcquisitionType: db.acquisition_type, Source: db.source, 
     DateReceived: db.date_received, TotalReceived: db.total_received, TotalDistributed: db.total_distributed, RemainingStock: db.remaining_stock, Notes: db.notes
 });
 const mapDist = db => ({ LogID: db.log_id, BookTitle: db.book_title, Recipient: db.recipient, Quantity: db.quantity, Date: db.date, Notes: db.notes });
@@ -227,7 +227,6 @@ function downloadCSV(headers, rows, filenamePrefix) {
     document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
 }
 
-// Public Catalog CSV
 function exportPublicCatalogCSV() {
     if (allBooks.length === 0) { alert("The catalog is currently empty or loading."); return; }
     const headers = ["Book ID", "Title", "Author", "Category", "Pages", "Access Rule"];
@@ -290,7 +289,6 @@ async function loginMember() {
 }
 function logoutUser() { localStorage.removeItem('cbc_user'); currentUser = null; updateUserAuthUI(); }
 
-// BORROW LIMIT ENFORCEMENT
 function checkBorrowLimit() {
     if (!currentUser) return false;
     const activeLoans = allBorrows.filter(b => String(b.MemberID).toUpperCase() === String(currentUser.id).toUpperCase() && ['Pending', 'Approved', 'Active'].includes(b.Status));
@@ -320,14 +318,18 @@ async function submitBorrowRequest() {
     const time = document.getElementById('borrow-pickup-time').value;
     const due = document.getElementById('borrow-due-date').value;
     if(!date || !time || !due){ alert("Please complete the form"); return; }
+
     const borrowId = "BRW-" + Date.now();
     const obj = {
         borrow_id: borrowId, book_id: parseInt(activeBookForAction.id), book_title: activeBookForAction.title, member_id: currentUser.id, 
         member_name: currentUser.name, member_phone: currentUser.phone || '', type: 'Borrow', pickup_date: date, pickup_time: time, due_date: due, status: 'Pending'
     };
+
     const { error } = await supabaseClient.from('borrows').insert([obj]);
     if (error) { alert(error.message); return; }
-    allBorrows.unshift(mapBorrow(obj)); closeModal('borrow-modal'); initCatalog(); renderCirculationCounts();
+
+    allBorrows.unshift(mapBorrow(obj));
+    closeModal('borrow-modal'); initCatalog(); renderCirculationCounts();
     alert("Borrow Request Submitted successfully! Await librarian approval.");
 }
 
@@ -342,14 +344,18 @@ function openOnsiteScheduleForm() {
 async function submitOnsiteSchedule() {
     const date = document.getElementById('onsite-date').value; const time = document.getElementById('onsite-time').value;
     if(!date || !time) { alert("Date and time required."); return; }
+
     const borrowId = "BRW-" + Date.now();
     const obj = {
         borrow_id: borrowId, book_id: parseInt(activeBookForAction.id), book_title: activeBookForAction.title, member_id: currentUser.id, 
         member_name: currentUser.name, member_phone: currentUser.phone || '', type: 'Onsite', pickup_date: date, pickup_time: time, due_date: date, status: 'Pending'
     };
+
     const { error } = await supabaseClient.from('borrows').insert([obj]);
     if (error) { alert(error.message); return; }
-    allBorrows.unshift(mapBorrow(obj)); closeModal('onsite-modal'); initCatalog(); renderCirculationCounts();
+
+    allBorrows.unshift(mapBorrow(obj));
+    closeModal('onsite-modal'); initCatalog(); renderCirculationCounts();
     alert(`Your reading desk slot for ${date} at ${time} is recorded!`);
 }
 
@@ -521,6 +527,7 @@ function renderStockAuditTable() {
     const tb = document.getElementById('stock-audit-tbody'); if (!tb) return;
     let tc = 0, tl = 0, ta = 0;
     allBooks.forEach(b => { tc += b.copies; const a = calculateAvailableCopies(b.id, b.copies); ta += a; tl += (b.copies - a); });
+    
     if(document.getElementById('stock-kpi-titles')) document.getElementById('stock-kpi-titles').textContent = allBooks.length; 
     if(document.getElementById('stock-kpi-total-copies')) document.getElementById('stock-kpi-total-copies').textContent = tc; 
     if(document.getElementById('stock-kpi-loaned')) document.getElementById('stock-kpi-loaned').textContent = tl; 
@@ -546,27 +553,6 @@ function renderStockAuditTable() {
         return `<tr class="border-b"><td class="p-3 font-mono">#${b.id}</td><td class="p-3 font-bold">${b.title} <br><span class="text-[10px] font-normal text-church-500">By ${b.author}</span></td><td class="p-3">${b.category}</td><td class="p-3 text-[10px] font-bold">${b.classification}</td><td class="p-3 text-center">${b.copies}</td><td class="p-3 text-center text-amber-800">${b.copies - a}</td><td class="p-3 text-center text-emerald-700 font-bold">${a}</td><td class="p-3 text-center">${a > 0 ? '<span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[10px]">In Stock</span>' : '<span class="bg-red-100 text-red-800 px-1.5 py-0.5 rounded text-[10px]">Out</span>'}</td><td class="p-3 text-right whitespace-nowrap"><button onclick="openEditBookModal(${b.id})" class="text-blue-600 hover:text-blue-800 mr-2" title="Edit Book"><i class="fa-solid fa-pen-to-square"></i></button><button onclick="deleteBook(${b.id})" class="text-red-600 hover:text-red-800" title="Delete Book"><i class="fa-solid fa-trash"></i></button></td></tr>`; 
     }).join('');
 }
-function exportStockReportCSV() {
-    const q = (document.getElementById('stock-search-input')?.value || '').toLowerCase().trim();
-    const cat = document.getElementById('stock-category-filter')?.value || '';
-    const acc = document.getElementById('stock-classification-filter')?.value || '';
-    const availF = document.getElementById('stock-availability-filter')?.value || '';
-
-    const list = allBooks.filter(b => {
-        if(q && !b.title.toLowerCase().includes(q) && !b.author.toLowerCase().includes(q)) return false;
-        if(cat && b.category !== cat) return false;
-        if(acc && b.classification !== acc) return false;
-        const a = calculateAvailableCopies(b.id, b.copies);
-        if(availF === 'available' && a <= 0) return false;
-        if(availF === 'out' && a > 0) return false;
-        return true;
-    });
-
-    if(list.length === 0) { alert("No data to export based on current filters."); return; }
-    const headers = ["Book ID", "Title", "Author", "Category", "Access Rule", "Total Copies", "Available on Shelf", "Status"];
-    const rows = list.map(b => { const a = calculateAvailableCopies(b.id, b.copies); return [b.id, `"${b.title.replace(/"/g, '""')}"`, `"${b.author.replace(/"/g, '""')}"`, `"${b.category}"`, `"${b.classification}"`, b.copies, a, `"${a > 0 ? 'In Stock' : 'Out of Stock'}"`]; });
-    downloadCSV(headers, rows, "CBC_Stock_Audit_Report");
-}
 
 // ---------------- STORAGE ----------------
 function switchStorageSubTab(t) { currentStorageSubTab = t; document.getElementById('storage-view-stock').classList.toggle('hidden', t !== 'stock'); document.getElementById('storage-view-dist').classList.toggle('hidden', t !== 'dist'); renderStorageTables(); }
@@ -574,8 +560,8 @@ function renderStorageTables() {
     const sT = document.getElementById('storage-stock-tbody'); const dT = document.getElementById('storage-dist-tbody');
     const q = (document.getElementById('storage-search-input')?.value || '').toLowerCase().trim();
     if (sT) {
-        const sList = allStorageStock.filter(s => !q || s.Title.toLowerCase().includes(q) || s.Source.toLowerCase().includes(q));
-        sT.innerHTML = sList.map(s => `<tr><td class="p-3 font-mono">${s.ItemID}</td><td class="p-3 font-bold">${s.Title}</td><td class="p-3">${s.Source}</td><td class="p-3">${s.DateReceived}</td><td class="p-3 text-center">${s.TotalReceived}</td><td class="p-3 text-center text-amber-800">${s.TotalDistributed}</td><td class="p-3 text-center text-emerald-700 font-bold">${s.RemainingStock}</td><td class="p-3 text-right"><button onclick="openStorageDistributeModal('${s.ItemID}')" class="bg-amber-700 text-white px-2 py-1 rounded text-[10px]">Distribute</button></td></tr>`).join('');
+        const sList = allStorageStock.filter(s => !q || s.Title.toLowerCase().includes(q) || (s.Source||'').toLowerCase().includes(q));
+        sT.innerHTML = sList.map(s => `<tr><td class="p-3 font-mono">${s.ItemID}</td><td class="p-3 font-bold">${s.Title}</td><td class="p-3">${s.Source || ''}</td><td class="p-3">${s.DateReceived}</td><td class="p-3 text-center">${s.TotalReceived}</td><td class="p-3 text-center text-amber-800">${s.TotalDistributed}</td><td class="p-3 text-center text-emerald-700 font-bold">${s.RemainingStock}</td><td class="p-3 text-right whitespace-nowrap"><button onclick="openStorageDistributeModal('${s.ItemID}')" class="bg-amber-700 hover:bg-amber-800 text-white px-2 py-1 rounded text-[10px] mr-1">Distribute</button><button onclick="openEditStorageModal('${s.ItemID}')" class="text-blue-600 hover:text-blue-800 mr-2" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button><button onclick="deleteStorage('${s.ItemID}')" class="text-red-600 hover:text-red-800" title="Delete"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
     }
     if (dT) {
         const dList = allDistributionLogs.filter(d => !q || d.BookTitle.toLowerCase().includes(q) || d.Recipient.toLowerCase().includes(q));
@@ -583,22 +569,7 @@ function renderStorageTables() {
     }
     if(document.getElementById('count-dist-logs')) document.getElementById('count-dist-logs').textContent = allDistributionLogs.length;
 }
-function exportStorageCSV() {
-    const q = (document.getElementById('storage-search-input')?.value || '').toLowerCase().trim();
-    if (currentStorageSubTab === 'stock') {
-        const list = allStorageStock.filter(s => !q || s.Title.toLowerCase().includes(q) || s.Source.toLowerCase().includes(q));
-        if (list.length === 0) { alert("No stock data to export."); return; }
-        const headers = ["Item ID", "Title", "Source", "Date Received", "Total Received", "Total Distributed", "Remaining Stock"];
-        const rows = list.map(s => [`"${s.ItemID}"`, `"${s.Title.replace(/"/g, '""')}"`, `"${s.Source.replace(/"/g, '""')}"`, `"${s.DateReceived}"`, s.TotalReceived, s.TotalDistributed, s.RemainingStock]);
-        downloadCSV(headers, rows, "CBC_Storage_Stock");
-    } else {
-        const list = allDistributionLogs.filter(d => !q || d.BookTitle.toLowerCase().includes(q) || d.Recipient.toLowerCase().includes(q));
-        if (list.length === 0) { alert("No distribution logs to export."); return; }
-        const headers = ["Log ID", "Book Title", "Recipient", "Quantity", "Date", "Notes"];
-        const rows = list.map(d => [`"${d.LogID}"`, `"${d.BookTitle.replace(/"/g, '""')}"`, `"${d.Recipient.replace(/"/g, '""')}"`, d.Quantity, `"${d.Date}"`, `"${d.Notes.replace(/"/g, '""')}"`]);
-        downloadCSV(headers, rows, "CBC_Distribution_Logs");
-    }
-}
+
 function openStorageIntakeModal() { document.getElementById('storage-intake-modal').classList.remove('hidden'); }
 async function submitStorageIntake() {
     const copies = parseInt(document.getElementById('intake-copies').value) || 1;
@@ -606,6 +577,29 @@ async function submitStorageIntake() {
     const { error } = await supabaseClient.from('storage_stock').insert([obj]); if (error) { alert(error.message); return; }
     allStorageStock.unshift(mapStorage(obj)); closeModal('storage-intake-modal'); renderStorageTables();
 }
+
+function openEditStorageModal(id) {
+    const item = allStorageStock.find(s => s.ItemID === id); if (!item) return;
+    document.getElementById('edit-storage-id').value = item.ItemID; document.getElementById('edit-storage-title').value = item.Title; document.getElementById('edit-storage-author').value = item.Author || ''; document.getElementById('edit-storage-category').value = item.Category || 'Other'; document.getElementById('edit-storage-acq-type').value = item.AcquisitionType || 'Donation'; document.getElementById('edit-storage-source').value = item.Source || ''; document.getElementById('edit-storage-copies').value = item.TotalReceived; document.getElementById('edit-storage-date').value = item.DateReceived;
+    document.getElementById('edit-storage-modal').classList.remove('hidden');
+}
+async function submitEditStorage() {
+    const id = document.getElementById('edit-storage-id').value; const title = document.getElementById('edit-storage-title').value.trim();
+    if (!title) { alert("Title is required."); return; }
+    const old = allStorageStock.find(s => s.ItemID === id); const newTotal = parseInt(document.getElementById('edit-storage-copies').value) || 1;
+    const rem = Math.max(0, newTotal - (old.TotalDistributed || 0));
+    const obj = { title: title, author: document.getElementById('edit-storage-author').value.trim(), category: document.getElementById('edit-storage-category').value, acquisition_type: document.getElementById('edit-storage-acq-type').value, source: document.getElementById('edit-storage-source').value.trim(), total_received: newTotal, remaining_stock: rem, date_received: document.getElementById('edit-storage-date').value };
+    const { error } = await supabaseClient.from('storage_stock').update(obj).eq('item_id', id);
+    if (error) { alert("Error updating storage: " + error.message); return; }
+    closeModal('edit-storage-modal'); alert("Storage updated!"); fetchAdminBackgroundData();
+}
+async function deleteStorage(id) {
+    if (!confirm("Are you sure you want to delete this storage item?")) return;
+    const { error } = await supabaseClient.from('storage_stock').delete().eq('item_id', id);
+    if (error) { alert("Cannot delete. It may be linked to distribution logs."); return; }
+    alert("Storage item deleted!"); fetchAdminBackgroundData();
+}
+
 function openStorageDistributeModal(p) {
     const s = document.getElementById('dist-item-select'); s.innerHTML = allStorageStock.filter(x => x.RemainingStock > 0).map(x => `<option value="${x.ItemID}" ${x.ItemID === p ? 'selected' : ''}>${x.Title} (${x.RemainingStock} left)</option>`).join('');
     document.getElementById('dist-date').value = new Date().toISOString().split('T')[0]; document.getElementById('storage-distribute-modal').classList.remove('hidden'); updateDistributionMax();
@@ -621,6 +615,22 @@ async function submitDistributionRecord() {
     await supabaseClient.from('distribution_logs').insert([obj]); await supabaseClient.from('storage_stock').update({ total_distributed: i.TotalDistributed + q, remaining_stock: i.RemainingStock - q }).eq('item_id', id);
     i.TotalDistributed += q; i.RemainingStock -= q; allDistributionLogs.unshift(mapDist(obj)); closeModal('storage-distribute-modal'); renderStorageTables(); alert("Distributed!");
 }
+function exportStorageCSV() {
+    const q = (document.getElementById('storage-search-input')?.value || '').toLowerCase().trim();
+    if (currentStorageSubTab === 'stock') {
+        const list = allStorageStock.filter(s => !q || s.Title.toLowerCase().includes(q) || (s.Source||'').toLowerCase().includes(q));
+        if (list.length === 0) { alert("No stock data to export."); return; }
+        const headers = ["Item ID", "Title", "Source", "Date Received", "Total Received", "Total Distributed", "Remaining Stock"];
+        const rows = list.map(s => [`"${s.ItemID}"`, `"${s.Title.replace(/"/g, '""')}"`, `"${(s.Source||'').replace(/"/g, '""')}"`, `"${s.DateReceived}"`, s.TotalReceived, s.TotalDistributed, s.RemainingStock]);
+        downloadCSV(headers, rows, "CBC_Storage_Stock");
+    } else {
+        const list = allDistributionLogs.filter(d => !q || d.BookTitle.toLowerCase().includes(q) || d.Recipient.toLowerCase().includes(q));
+        if (list.length === 0) { alert("No distribution logs to export."); return; }
+        const headers = ["Log ID", "Book Title", "Recipient", "Quantity", "Date", "Notes"];
+        const rows = list.map(d => [`"${d.LogID}"`, `"${d.BookTitle.replace(/"/g, '""')}"`, `"${d.Recipient.replace(/"/g, '""')}"`, d.Quantity, `"${d.Date}"`, `"${(d.Notes||'').replace(/"/g, '""')}"`]);
+        downloadCSV(headers, rows, "CBC_Distribution_Logs");
+    }
+}
 
 // ---------------- MEMBERS ----------------
 function renderMembersTable() {
@@ -632,7 +642,7 @@ function renderMembersTable() {
         if(q && !(m.FullName.toLowerCase().includes(q) || m.MemberID.toLowerCase().includes(q) || (m.Phone||'').includes(q))) return false;
         return true;
     });
-    tb.innerHTML = list.map(m => `<tr><td class="p-3 font-bold">${m.MemberID}</td><td class="p-3">${m.FullName}</td><td class="p-3">${m.Designation}</td><td class="p-3">${m.Phone}</td><td class="p-3 text-right"><button onclick="openEditMemberModal('${m.MemberID}')" class="text-church-700 underline font-bold text-xs">Edit Phone</button></td></tr>`).join('');
+    tb.innerHTML = list.map(m => `<tr><td class="p-3 font-bold">${m.MemberID}</td><td class="p-3">${m.FullName}</td><td class="p-3">${m.Designation}</td><td class="p-3">${m.Phone || ''}</td><td class="p-3 text-right whitespace-nowrap"><button onclick="openEditMemberModal('${m.MemberID}')" class="text-blue-600 hover:text-blue-800 mr-2" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button><button onclick="deleteMember('${m.MemberID}')" class="text-red-600 hover:text-red-800" title="Delete"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
 }
 function exportMembersCSV() {
     const q = (document.getElementById('member-search-input')?.value || '').toLowerCase().trim();
@@ -654,8 +664,28 @@ async function adminRegisterMember() {
     const { error } = await supabaseClient.from('members').insert([obj]); if (error) { alert(error.message); return; }
     allMembers.push(mapMember(obj)); alert("Registered!"); renderMembersTable(); document.getElementById('new-mem-id').value = ''; document.getElementById('new-mem-name').value = '';
 }
-function openEditMemberModal(id) { targetEditMember = allMembers.find(m => m.MemberID === id); document.getElementById('edit-mem-name').textContent = targetEditMember.FullName; document.getElementById('edit-mem-phone').value = targetEditMember.Phone; document.getElementById('edit-member-modal').classList.remove('hidden'); }
-async function saveMemberContact() { const ph = document.getElementById('edit-mem-phone').value; const { error } = await supabaseClient.from('members').update({ phone: ph }).eq('member_id', targetEditMember.MemberID); if(!error) { targetEditMember.Phone = ph; closeModal('edit-member-modal'); renderMembersTable(); } }
+function openEditMemberModal(id) { 
+    targetEditMember = allMembers.find(m => m.MemberID === id); 
+    document.getElementById('edit-mem-id-display').textContent = targetEditMember.MemberID; 
+    document.getElementById('edit-mem-id').value = targetEditMember.MemberID; 
+    document.getElementById('edit-mem-name').value = targetEditMember.FullName; 
+    document.getElementById('edit-mem-desig').value = targetEditMember.Designation; 
+    document.getElementById('edit-mem-phone').value = targetEditMember.Phone || ''; 
+    document.getElementById('edit-member-modal').classList.remove('hidden'); 
+}
+async function submitEditMember() { 
+    const id = document.getElementById('edit-mem-id').value; const name = document.getElementById('edit-mem-name').value.trim(); const desig = document.getElementById('edit-mem-desig').value; const phone = document.getElementById('edit-mem-phone').value.trim();
+    if (!name) { alert("Name cannot be empty."); return; }
+    const { error } = await supabaseClient.from('members').update({ full_name: name, designation: desig, phone: phone }).eq('member_id', id); 
+    if(error) { alert("Error: " + error.message); return; } 
+    closeModal('edit-member-modal'); alert("Member details updated!"); fetchLibraryDataFromSupabase(); 
+}
+async function deleteMember(id) {
+    if (!confirm(`Are you sure you want to delete member ${id}?`)) return;
+    const { error } = await supabaseClient.from('members').delete().eq('member_id', id);
+    if (error) { alert("Cannot delete member. They likely have active or past borrow records."); return; }
+    alert("Member deleted!"); fetchLibraryDataFromSupabase();
+}
 
 // ---------------- ANALYTICS & REPORTS (BORROWS) ----------------
 function applyAnalyticsTimelineFilter() {
@@ -701,7 +731,6 @@ function exportAnalyticsCSV() {
     });
 
     if (filtered.length === 0) { alert("No records found for the selected filters."); return; }
-
     const headers = ["Borrow ID", "Book Title", "Category", "Borrower Name", "Borrower ID", "Pickup Date", "Due Date", "Return Date", "Status"];
     const rows = filtered.map(b => {
         const book = allBooks.find(bk => bk.id == b.BookID);
@@ -710,10 +739,8 @@ function exportAnalyticsCSV() {
     downloadCSV(headers, rows, "CBC_Borrow_Analytics");
 }
 
-// Global Modal Closer
-function closeModal(id) { document.getElementById(id)?.classList.add('hidden'); }
 window.addEventListener('click', (e) => { 
-    ['login-modal', 'book-modal', 'borrow-modal', 'onsite-modal', 'admin-pin-modal', 'add-book-modal', 'edit-book-modal', 'storage-intake-modal', 'storage-distribute-modal', 'issue-modal', 'return-modal', 'edit-member-modal', 'my-requests-modal', 'create-group-modal', 'group-modal', 'all-groups-modal', 'admin-settings-modal'].forEach(id => { 
+    ['login-modal', 'book-modal', 'borrow-modal', 'onsite-modal', 'admin-pin-modal', 'add-book-modal', 'edit-book-modal', 'storage-intake-modal', 'edit-storage-modal', 'storage-distribute-modal', 'issue-modal', 'return-modal', 'edit-member-modal', 'my-requests-modal', 'create-group-modal', 'group-modal', 'all-groups-modal', 'admin-settings-modal'].forEach(id => { 
         const el = document.getElementById(id); if (el && e.target === el) el.classList.add('hidden'); 
     }); 
 });
