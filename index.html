@@ -36,8 +36,8 @@
             <p class="font-bold text-amber-400">Update Available!</p>
             <p class="text-church-200">A new version of the app is ready.</p>
         </div>
-        <button onclick="applyPwaUpdate()" class="bg-amber-500 hover:bg-amber-600 text-church-900 px-3 py-1.5 rounded-lg text-xs font-bold transition shadow">Reload</button>
-        <button onclick="document.getElementById('pwa-update-banner').classList.add('hidden')" class="text-church-400 hover:text-white">&times;</button>
+        <button type="button" onclick="applyPwaUpdate()" class="bg-amber-500 hover:bg-amber-600 text-church-900 px-3 py-1.5 rounded-lg text-xs font-bold transition shadow">Reload</button>
+        <button type="button" onclick="document.getElementById('pwa-update-banner').classList.add('hidden')" class="text-church-400 hover:text-white">&times;</button>
     </div>
 
     <!-- Navigation Header -->
@@ -54,37 +54,37 @@
             </div>
 
             <nav class="hidden md:flex items-center space-x-6 text-sm font-medium">
-                <button id="install-app-btn-desktop" onclick="installPWA()" class="hidden bg-emerald-700 hover:bg-emerald-800 text-white text-xs px-3 py-1.5 rounded-xl font-bold transition flex items-center space-x-1.5 shadow-sm">
+                <button type="button" id="install-app-btn-desktop" onclick="installPWA()" class="hidden bg-emerald-700 hover:bg-emerald-800 text-white text-xs px-3 py-1.5 rounded-xl font-bold transition flex items-center space-x-1.5 shadow-sm">
                     <i class="fa-solid fa-download"></i><span>Install App</span>
                 </button>
                 <a href="#catalog" class="hover:text-church-600 transition-colors">Catalog</a>
-                <button onclick="openAllGroupsModal()" class="hover:text-church-600 transition-colors flex items-center gap-1.5 font-bold text-amber-800">
+                <button type="button" onclick="openAllGroupsModal()" class="hover:text-church-600 transition-colors flex items-center gap-1.5 font-bold text-amber-800">
                     <i class="fa-solid fa-users"></i> Group Reading (<span id="nav-group-count">0</span>)
                 </button>
                 <div id="user-auth-badge"></div>
-                <button id="btn-librarian-toggle" onclick="openAdminPinModal()" class="border border-church-300 hover:border-church-700 text-church-800 text-xs px-3 py-2 rounded-xl font-medium transition flex items-center space-x-1.5 shadow-sm">
+                <button type="button" id="btn-librarian-toggle" onclick="openAdminPinModal()" class="border border-church-300 hover:border-church-700 text-church-800 text-xs px-3 py-2 rounded-xl font-medium transition flex items-center space-x-1.5 shadow-sm">
                     <i class="fa-solid fa-lock text-[11px]"></i>
                     <span id="librarian-btn-label">Librarian</span>
                 </button>
             </nav>
 
-            <button id="menu-btn" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" class="md:hidden text-church-800 p-2">
+            <button type="button" id="menu-btn" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" class="md:hidden text-church-800 p-2">
                 <i class="fa-solid fa-bars text-2xl"></i>
             </button>
         </div>
 
         <div id="mobile-menu" class="hidden md:hidden bg-white border-b border-church-200 px-4 pt-2 pb-4 space-y-3">
             <div id="mobile-user-auth-badge" class="pb-2 border-b border-church-100"></div>
-            <button id="install-app-btn-mobile" onclick="installPWA()" class="hidden w-full text-left py-2 text-emerald-700 font-bold hover:bg-church-50 rounded px-2 flex items-center justify-between border border-emerald-200 bg-emerald-50 mb-2">
+            <button type="button" id="install-app-btn-mobile" onclick="installPWA()" class="hidden w-full text-left py-2 text-emerald-700 font-bold hover:bg-church-50 rounded px-2 flex items-center justify-between border border-emerald-200 bg-emerald-50 mb-2">
                 <span><i class="fa-solid fa-download mr-1"></i> Install App</span>
             </button>
             <a href="#catalog" onclick="document.getElementById('mobile-menu').classList.add('hidden')" class="block py-2 text-church-900 hover:bg-church-50 rounded px-2 font-medium">Catalog</a>
-            <button onclick="openAllGroupsModal(); document.getElementById('mobile-menu').classList.add('hidden')" class="w-full text-left py-2 text-amber-800 font-bold hover:bg-church-50 rounded px-2 flex items-center justify-between">
+            <button type="button" onclick="openAllGroupsModal(); document.getElementById('mobile-menu').classList.add('hidden')" class="w-full text-left py-2 text-amber-800 font-bold hover:bg-church-50 rounded px-2 flex items-center justify-between">
                 <span><i class="fa-solid fa-users mr-1"></i> Group Reading Circles</span>
                 <span class="bg-amber-100 text-amber-900 text-xs px-2 py-0.5 rounded-full" id="mobile-nav-group-count">0</span>
             </button>
             <div class="pt-2 border-t border-church-100">
-                <button onclick="openAdminPinModal(); document.getElementById('mobile-menu').classList.add('hidden')" class="w-full text-left py-2 text-church-800 font-semibold px-2 flex items-center gap-2">
+                <button type="button" onclick="openAdminPinModal(); document.getElementById('mobile-menu').classList.add('hidden')" class="w-full text-left py-2 text-church-800 font-semibold px-2 flex items-center gap-2">
                     <i class="fa-solid fa-shield-halved text-amber-700"></i> Librarian Terminal
                 </button>
             </div>
@@ -119,7 +119,7 @@
                         <option value="Bibles">Bibles</option>
                         <option value="Ethics">Ethics</option>
                     </select>
-                    <button onclick="exportPublicCatalogCSV()" class="w-full sm:w-auto bg-church-100 hover:bg-church-200 border border-church-300 text-church-800 px-4 py-2.5 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 whitespace-nowrap">
+                    <button type="button" onclick="exportPublicCatalogCSV()" class="w-full sm:w-auto bg-church-100 hover:bg-church-200 border border-church-300 text-church-800 px-4 py-2.5 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 whitespace-nowrap">
                         <i class="fa-solid fa-file-csv"></i> Download Catalog
                     </button>
                 </div>
@@ -129,7 +129,7 @@
         <div id="book-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 
         <div id="load-more-container" class="hidden text-center mt-12">
-            <button id="load-more-btn" onclick="loadMoreBooks()" class="bg-church-100 hover:bg-church-200 text-church-900 border border-church-300 font-semibold px-6 py-2.5 rounded-xl text-sm transition">
+            <button type="button" id="load-more-btn" onclick="loadMoreBooks()" class="bg-church-100 hover:bg-church-200 text-church-900 border border-church-300 font-semibold px-6 py-2.5 rounded-xl text-sm transition">
                 Load More Books <i class="fa-solid fa-chevron-down ml-2 text-xs"></i>
             </button>
         </div>
@@ -147,43 +147,41 @@
                     <h2 class="text-xl font-extrabold text-church-900 flex items-center gap-2"><i class="fa-solid fa-shield-halved text-amber-700"></i> Librarian Terminal</h2>
                 </div>
                 <div class="flex space-x-2">
-                    <button onclick="openAdminSettingsModal()" class="border border-church-300 hover:bg-church-50 text-church-800 text-xs px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5">
+                    <button type="button" onclick="openAdminSettingsModal()" class="border border-church-300 hover:bg-church-50 text-church-800 text-xs px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5">
                         <i class="fa-solid fa-gear"></i> Settings
                     </button>
-                    <button onclick="exitLibrarianConsole()" class="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs px-3.5 py-1.5 rounded-xl font-bold transition">
+                    <button type="button" onclick="exitLibrarianConsole()" class="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs px-3.5 py-1.5 rounded-xl font-bold transition">
                         <i class="fa-solid fa-door-open mr-1"></i> Exit Admin
                     </button>
                 </div>
             </div>
 
-            <!-- NEW: LIBRARIAN ACTION CENTER ALERTS -->
+            <!-- Action Center Alerts (For Overdue/Pending) -->
             <div id="librarian-action-center" class="hidden mb-6 bg-red-50 border border-red-200 rounded-2xl p-4 shadow-sm">
                 <h3 class="text-red-800 font-bold text-sm mb-3"><i class="fa-solid fa-bell animate-pulse mr-1"></i> Action Required</h3>
-                <div id="action-center-content" class="flex flex-wrap gap-3">
-                    <!-- Dynamic Alert Buttons Inject Here -->
-                </div>
+                <div id="action-center-content" class="flex flex-wrap gap-3"></div>
             </div>
 
             <!-- 5 Toggle Tabs -->
             <div class="flex flex-wrap gap-2 border-b border-church-200 pb-2">
-                <button id="tab-btn-circulation" onclick="switchAdminTab('circulation')" class="admin-tab-btn active px-4 py-2 rounded-xl text-xs font-bold bg-church-800 text-white shadow-sm">
+                <button type="button" id="tab-btn-circulation" onclick="switchAdminTab('circulation')" class="admin-tab-btn active px-4 py-2 rounded-xl text-xs font-bold bg-church-800 text-white shadow-sm">
                     Circulation <span id="badge-pending-count" class="bg-amber-500 text-white px-1.5 py-0.2 rounded-full text-[10px]">0</span>
                 </button>
-                <button id="tab-btn-stock" onclick="switchAdminTab('stock')" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Stock</button>
-                <button id="tab-btn-storage" onclick="switchAdminTab('storage')" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Storage</button>
-                <button id="tab-btn-members" onclick="switchAdminTab('members')" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Members</button>
-                <button id="tab-btn-analytics" onclick="switchAdminTab('analytics')" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Reports</button>
+                <button type="button" id="tab-btn-stock" onclick="switchAdminTab('stock')" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Stock</button>
+                <button type="button" id="tab-btn-storage" onclick="switchAdminTab('storage')" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Storage</button>
+                <button type="button" id="tab-btn-members" onclick="switchAdminTab('members')" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Members</button>
+                <button type="button" id="tab-btn-analytics" onclick="switchAdminTab('analytics')" class="admin-tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Reports</button>
             </div>
 
             <!-- WINDOW 1: CIRCULATION DESK -->
             <div id="admin-window-circulation" class="space-y-4">
                 <div class="flex flex-wrap gap-2">
-                    <button data-filter="All" onclick="filterCirculationStatus('All')" class="circ-filter-btn text-xs px-3 py-1.5 rounded-lg bg-church-200 font-bold ring-2 ring-church-800 ring-offset-1">All</button>
-                    <button data-filter="Pending" onclick="filterCirculationStatus('Pending')" class="circ-filter-btn text-xs px-3 py-1.5 rounded-lg bg-amber-50 text-amber-900 border font-bold">🟡 Pending</button>
-                    <button data-filter="Approved" onclick="filterCirculationStatus('Approved')" class="circ-filter-btn text-xs px-3 py-1.5 rounded-lg bg-blue-50 text-blue-900 border font-bold">🔵 Approved</button>
-                    <button data-filter="Active" onclick="filterCirculationStatus('Active')" class="circ-filter-btn text-xs px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-900 border font-bold">🟢 Active</button>
-                    <button data-filter="Overdue" onclick="filterCirculationStatus('Overdue')" class="circ-filter-btn text-xs px-3 py-1.5 rounded-lg bg-red-50 text-red-900 border font-bold">🔴 Overdue</button>
-                    <button data-filter="Returned" onclick="filterCirculationStatus('Returned')" class="circ-filter-btn text-xs px-3 py-1.5 rounded-lg bg-church-100 font-bold">Returned</button>
+                    <button type="button" data-filter="All" onclick="filterCirculationStatus('All')" class="circ-filter-btn active text-xs px-3 py-1.5 rounded-lg bg-church-200 font-bold ring-2 ring-church-800 ring-offset-1">All</button>
+                    <button type="button" data-filter="Pending" onclick="filterCirculationStatus('Pending')" class="circ-filter-btn text-xs px-3 py-1.5 rounded-lg bg-amber-50 text-amber-900 border font-bold">🟡 Pending</button>
+                    <button type="button" data-filter="Approved" onclick="filterCirculationStatus('Approved')" class="circ-filter-btn text-xs px-3 py-1.5 rounded-lg bg-blue-50 text-blue-900 border font-bold">🔵 Approved</button>
+                    <button type="button" data-filter="Active" onclick="filterCirculationStatus('Active')" class="circ-filter-btn text-xs px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-900 border font-bold">🟢 Active</button>
+                    <button type="button" data-filter="Overdue" onclick="filterCirculationStatus('Overdue')" class="circ-filter-btn text-xs px-3 py-1.5 rounded-lg bg-red-50 text-red-900 border font-bold">🔴 Overdue</button>
+                    <button type="button" data-filter="Returned" onclick="filterCirculationStatus('Returned')" class="circ-filter-btn text-xs px-3 py-1.5 rounded-lg bg-church-100 font-bold">Returned</button>
                 </div>
                 <div class="overflow-x-auto border border-church-200 rounded-2xl">
                     <table class="w-full text-left text-xs border-collapse bg-white">
@@ -208,8 +206,8 @@
                     <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pb-3 border-b border-church-200">
                         <h3 class="text-xs font-bold text-church-900 uppercase">Stock & Inventory Query</h3>
                         <div class="flex gap-2">
-                            <button onclick="exportStockReportCSV()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow"><i class="fa-solid fa-file-excel mr-1"></i> Export Report</button>
-                            <button onclick="openAddBookModal()" class="bg-purple-700 hover:bg-purple-800 text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow"><i class="fa-solid fa-book-medical mr-1"></i> Add Book</button>
+                            <button type="button" onclick="exportStockReportCSV()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow"><i class="fa-solid fa-file-excel mr-1"></i> Export Report</button>
+                            <button type="button" onclick="openAddBookModal()" class="bg-purple-700 hover:bg-purple-800 text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow"><i class="fa-solid fa-book-medical mr-1"></i> Add Book</button>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
@@ -243,19 +241,19 @@
                     <div class="flex justify-between items-center pb-3">
                         <h3 class="text-xs font-bold text-church-900 uppercase">Storage & Benevolence</h3>
                         <div class="flex gap-2">
-                            <button onclick="openStorageIntakeModal()" class="bg-church-800 text-white px-3 py-1.5 rounded-xl font-bold text-xs">Stock Intake</button>
-                            <button onclick="openStorageDistributeModal()" class="bg-amber-700 text-white px-3 py-1.5 rounded-xl font-bold text-xs">Record Dist.</button>
+                            <button type="button" onclick="openStorageIntakeModal()" class="bg-church-800 text-white px-3 py-1.5 rounded-xl font-bold text-xs">Stock Intake</button>
+                            <button type="button" onclick="openStorageDistributeModal()" class="bg-amber-700 text-white px-3 py-1.5 rounded-xl font-bold text-xs">Record Dist.</button>
                         </div>
                     </div>
                 </div>
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-3 border-b border-church-200 pb-2">
                     <div class="flex space-x-2">
-                        <button id="subtab-storage-stock" onclick="switchStorageSubTab('stock')" class="px-3 py-1 rounded-lg text-xs font-bold bg-church-800 text-white">Storage Stock</button>
-                        <button id="subtab-storage-dist" onclick="switchStorageSubTab('dist')" class="px-3 py-1 rounded-lg text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Dist. Logs (<span id="count-dist-logs">0</span>)</button>
+                        <button type="button" id="subtab-storage-stock" onclick="switchStorageSubTab('stock')" class="px-3 py-1 rounded-lg text-xs font-bold bg-church-800 text-white">Storage Stock</button>
+                        <button type="button" id="subtab-storage-dist" onclick="switchStorageSubTab('dist')" class="px-3 py-1 rounded-lg text-xs font-bold bg-church-100 text-church-800 hover:bg-church-200">Dist. Logs (<span id="count-dist-logs">0</span>)</button>
                     </div>
                     <div class="flex space-x-2 w-full sm:w-auto">
                         <input id="storage-search-input" oninput="renderStorageTables()" type="text" placeholder="Search storage..." class="w-full sm:w-48 p-1.5 border rounded-lg text-xs bg-white">
-                        <button onclick="exportStorageCSV()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 shadow-sm"><i class="fa-solid fa-file-excel"></i> Export</button>
+                        <button type="button" onclick="exportStorageCSV()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1 shadow-sm"><i class="fa-solid fa-file-excel"></i> Export</button>
                     </div>
                 </div>
                 <div id="storage-view-stock" class="overflow-x-auto border border-church-200 rounded-2xl bg-white">
@@ -291,7 +289,7 @@
                             <option value="Other">Other</option>
                         </select>
                         <input id="new-mem-phone" type="text" placeholder="WhatsApp (e.g. 0712345678)" class="p-2 border rounded-xl text-xs bg-white">
-                        <button onclick="adminRegisterMember()" class="bg-church-800 hover:bg-church-900 text-white font-bold rounded-xl text-xs py-2">Register</button>
+                        <button type="button" onclick="adminRegisterMember()" class="bg-church-800 hover:bg-church-900 text-white font-bold rounded-xl text-xs py-2">Register</button>
                     </div>
                 </div>
                 
@@ -306,7 +304,7 @@
                             <option value="Pastor">Pastor</option>
                         </select>
                     </div>
-                    <button onclick="exportMembersCSV()" class="w-full sm:w-auto bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1 shadow-sm"><i class="fa-solid fa-file-excel"></i> Export CSV</button>
+                    <button type="button" onclick="exportMembersCSV()" class="w-full sm:w-auto bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1 shadow-sm"><i class="fa-solid fa-file-excel"></i> Export CSV</button>
                 </div>
 
                 <div class="overflow-x-auto border border-church-200 rounded-2xl">
@@ -324,7 +322,7 @@
                 <div class="bg-church-50 p-4 rounded-2xl border border-church-200 space-y-3">
                     <div class="flex items-center justify-between border-b pb-2">
                         <h3 class="text-xs font-bold text-church-900 uppercase">Track Borrowed Books</h3>
-                        <button onclick="exportAnalyticsCSV()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow-sm transition"><i class="fa-solid fa-file-excel mr-1"></i> Export Report</button>
+                        <button type="button" onclick="exportAnalyticsCSV()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow-sm transition"><i class="fa-solid fa-file-excel mr-1"></i> Export Report</button>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 text-xs">
                         <div><label class="block font-semibold mb-1 text-church-700">From Date</label><input id="analytics-date-from" type="date" class="w-full p-2 border rounded-xl bg-white"></div>
@@ -334,14 +332,16 @@
                             <select id="analytics-category" class="w-full p-2 border rounded-xl bg-white">
                                 <option value="">All Categories</option>
                                 <option value="Systematic Theology">Systematic Theology</option>
+                                <option value="Biblical Theology">Biblical Theology</option>
                                 <option value="Commentaries">Commentaries</option>
                                 <option value="Practical Theology">Practical Theology</option>
                                 <option value="Practical Living">Practical Living</option>
                                 <option value="Bibles">Bibles</option>
+                                <option value="Ethics">Ethics</option>
                             </select>
                         </div>
                         <div><label class="block font-semibold mb-1 text-church-700">Search Query</label><input id="analytics-search-query" type="text" placeholder="Title or Borrower" class="w-full p-2 border rounded-xl bg-white"></div>
-                        <div class="flex items-end"><button onclick="applyAnalyticsTimelineFilter()" class="w-full bg-church-800 text-white font-bold py-2 rounded-xl">Apply Filter</button></div>
+                        <div class="flex items-end"><button type="button" onclick="applyAnalyticsTimelineFilter()" class="w-full bg-church-800 text-white font-bold py-2 rounded-xl">Apply Filter</button></div>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -361,7 +361,6 @@
                     </table>
                 </div>
             </div>
-
         </div>
     </section>
 
@@ -369,7 +368,7 @@
         <div class="max-w-7xl mx-auto px-4 text-center text-xs text-church-400">&copy; Crosspoint Bible Church Library. Built for the glory of God.</div>
     </footer>
 
-    <!-- ==================== MODALS (SINGLE UNIQUE INSTANCES) ==================== -->
+    <!-- ==================== MODALS (STRICTLY UNIQUE IDs) ==================== -->
 
     <!-- Add Book Modal -->
     <div id="add-book-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
@@ -400,7 +399,10 @@
                 <textarea id="add-book-desc" placeholder="Brief Description..." rows="2" class="w-full p-2 border rounded-xl bg-church-50"></textarea>
                 <input id="add-book-img" type="text" placeholder="Image Name (e.g. images/mybook.jpeg)" value="images/churchdiscipline.jpeg" class="w-full p-2 border rounded-xl bg-church-50">
             </div>
-            <div class="flex justify-end space-x-2 pt-2"><button onclick="closeModal('add-book-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="submitNewBook()" class="px-5 py-2 bg-purple-700 text-white rounded-xl text-xs font-bold">Add Book</button></div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button type="button" onclick="closeModal('add-book-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button>
+                <button type="button" onclick="submitNewBook()" class="px-5 py-2 bg-purple-700 text-white rounded-xl text-xs font-bold">Add Book</button>
+            </div>
         </div>
     </div>
 
@@ -434,7 +436,10 @@
                 <textarea id="edit-book-desc" placeholder="Brief Description..." rows="2" class="w-full p-2 border rounded-xl bg-church-50"></textarea>
                 <input id="edit-book-img" type="text" placeholder="Image Name (e.g. images/mybook.jpeg)" class="w-full p-2 border rounded-xl bg-church-50">
             </div>
-            <div class="flex justify-end space-x-2 pt-2"><button onclick="closeModal('edit-book-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="submitEditBook()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold">Save Changes</button></div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button type="button" onclick="closeModal('edit-book-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button>
+                <button type="button" onclick="submitEditBook()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold">Save Changes</button>
+            </div>
         </div>
     </div>
 
@@ -465,7 +470,10 @@
                     <div><label class="block font-bold">Date Received</label><input id="edit-storage-date" type="date" class="w-full p-2 border rounded-xl bg-church-50"></div>
                 </div>
             </div>
-            <div class="flex justify-end space-x-2 pt-2"><button onclick="closeModal('edit-storage-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="submitEditStorage()" class="px-5 py-2 bg-amber-700 hover:bg-amber-800 text-white rounded-xl text-xs font-bold">Save</button></div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button type="button" onclick="closeModal('edit-storage-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button>
+                <button type="button" onclick="submitEditStorage()" class="px-5 py-2 bg-amber-700 hover:bg-amber-800 text-white rounded-xl text-xs font-bold">Save</button>
+            </div>
         </div>
     </div>
 
@@ -489,7 +497,10 @@
                 </div>
                 <div><label class="font-bold">WhatsApp Phone</label><input id="edit-mem-phone" type="text" class="w-full p-2 border rounded-xl bg-church-50"></div>
             </div>
-            <div class="flex justify-end space-x-2 pt-2"><button onclick="closeModal('edit-member-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="submitEditMember()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold">Save Changes</button></div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button type="button" onclick="closeModal('edit-member-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button>
+                <button type="button" onclick="submitEditMember()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold">Save Changes</button>
+            </div>
         </div>
     </div>
 
@@ -498,27 +509,40 @@
         <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl border">
             <h3 class="text-base font-extrabold text-church-900">Member Sign In</h3>
             <p id="login-modal-notice" class="text-xs text-church-600">Enter your Member ID and Full Name to login.</p>
-            <label class="font-bold text-xs">Member ID</label><input id="login-id" type="text" placeholder="e.g. CBC-001" class="w-full p-2.5 border rounded-xl text-sm bg-church-50 font-bold mb-2">
-            <label class="font-bold text-xs">Full Name</label><input id="login-name" type="text" placeholder="e.g. John Doe" class="w-full p-2.5 border rounded-xl text-sm bg-church-50">
-            <div class="flex justify-end space-x-2 pt-2"><button onclick="closeModal('login-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="loginMember()" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Sign In</button></div>
+            <label class="font-bold text-xs">Member ID</label>
+            <input id="login-id" type="text" placeholder="e.g. CBC-001" class="w-full p-2.5 border rounded-xl text-sm bg-church-50 font-bold mb-2">
+            <label class="font-bold text-xs">Full Name</label>
+            <input id="login-name" type="text" placeholder="e.g. John Doe" class="w-full p-2.5 border rounded-xl text-sm bg-church-50">
+            <div class="flex justify-end space-x-2 pt-2">
+                <button type="button" onclick="closeModal('login-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button>
+                <button type="button" onclick="loginMember()" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Sign In</button>
+            </div>
         </div>
     </div>
 
+    <!-- Admin PIN Modal -->
     <div id="admin-pin-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl border">
             <h3 class="text-base font-extrabold text-church-900 text-center">Librarian Access</h3>
             <input id="admin-pin-input" type="password" maxlength="6" placeholder="••••" class="w-full text-center tracking-widest text-2xl font-black p-3 border rounded-xl bg-church-50">
-            <div class="flex space-x-2"><button onclick="closeModal('admin-pin-modal')" class="w-1/2 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="submitAdminPin()" class="w-1/2 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Unlock</button></div>
+            <div class="flex space-x-2">
+                <button type="button" onclick="closeModal('admin-pin-modal')" class="w-1/2 py-2 border rounded-xl text-xs font-semibold">Cancel</button>
+                <button type="button" onclick="submitAdminPin()" class="w-1/2 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Unlock</button>
+            </div>
         </div>
     </div>
     
+    <!-- Admin Settings Modal -->
     <div id="admin-settings-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl border">
             <h3 class="text-base font-bold text-church-900"><i class="fa-solid fa-gear text-church-700 mr-1"></i> Library Admin Settings</h3>
             <p class="text-[11px] text-church-600 mb-2">Configure WhatsApp Signature Details.</p>
             <label class="text-[11px] font-bold text-church-700">Librarian Name / Title</label>
             <input id="setting-admin-name" type="text" placeholder="e.g. Library Coordinator" class="w-full p-2 border rounded-xl text-xs bg-church-50">
-            <div class="flex justify-end space-x-2 pt-2"><button onclick="closeModal('admin-settings-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="saveAdminSettings()" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Save</button></div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button type="button" onclick="closeModal('admin-settings-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button>
+                <button type="button" onclick="saveAdminSettings()" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Save</button>
+            </div>
         </div>
     </div>
 
@@ -527,7 +551,7 @@
         <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border">
             <div class="bg-church-100 px-6 py-4 flex items-center justify-between border-b">
                 <h3 id="modal-title" class="font-bold text-church-900 text-base truncate"></h3>
-                <button onclick="closeModal('book-modal')" class="text-xl font-bold">&times;</button>
+                <button type="button" onclick="closeModal('book-modal')" class="text-xl font-bold">&times;</button>
             </div>
             <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto text-sm">
                 <div class="flex gap-4">
@@ -542,10 +566,10 @@
                 <p id="modal-description" class="text-xs text-church-700 bg-church-50 p-3 rounded-xl border leading-relaxed"></p>
             </div>
             <div class="bg-church-50 px-6 py-3 border-t flex justify-between items-center">
-                <button onclick="openCreateGroupModal()" class="text-xs font-bold text-amber-800 hover:underline"><i class="fa-solid fa-users mr-1"></i> Start Group Reading</button>
+                <button type="button" onclick="openCreateGroupModal()" class="text-xs font-bold text-amber-800 hover:underline"><i class="fa-solid fa-users mr-1"></i> Start Group Reading</button>
                 <div class="space-x-2">
-                    <button onclick="closeModal('book-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Close</button>
-                    <button id="modal-action-btn" class="px-4 py-2 bg-church-800 text-white rounded-xl text-xs font-bold"></button>
+                    <button type="button" onclick="closeModal('book-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Close</button>
+                    <button type="button" id="modal-action-btn" class="px-4 py-2 bg-church-800 text-white rounded-xl text-xs font-bold"></button>
                 </div>
             </div>
         </div>
@@ -559,7 +583,10 @@
             <input id="create-grp-limit" type="number" min="2" max="15" value="5" class="w-full p-2 border rounded-lg text-xs bg-church-50">
             <label class="text-xs font-bold">Meeting Notes / Plan</label>
             <textarea id="create-grp-notes" rows="3" class="w-full p-2 border rounded-lg text-xs bg-church-50" placeholder="e.g. Saturdays at 4PM"></textarea>
-            <div class="flex justify-end space-x-2"><button onclick="closeModal('create-group-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="submitCreateGroup()" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Create Group</button></div>
+            <div class="flex justify-end space-x-2">
+                <button type="button" onclick="closeModal('create-group-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button>
+                <button type="button" onclick="submitCreateGroup()" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Create Group</button>
+            </div>
         </div>
     </div>
 
@@ -572,8 +599,8 @@
             <label class="text-xs font-bold">Meeting Notes / Plan</label>
             <textarea id="edit-grp-notes" rows="3" class="w-full p-2 border rounded-lg text-xs bg-church-50"></textarea>
             <div class="flex justify-end space-x-2">
-                <button onclick="closeModal('edit-group-modal'); openAllGroupsModal();" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button>
-                <button onclick="submitEditGroup()" class="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold">Save Changes</button>
+                <button type="button" onclick="closeModal('edit-group-modal'); openAllGroupsModal();" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button>
+                <button type="button" onclick="submitEditGroup()" class="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold">Save Changes</button>
             </div>
         </div>
     </div>
@@ -585,15 +612,18 @@
             <p class="text-xs text-church-600">Leader: <span id="grp-leader" class="font-bold"></span></p>
             <p class="text-xs text-church-600">Capacity: <span id="grp-capacity" class="font-bold text-amber-700"></span></p>
             <div class="bg-church-50 p-3 rounded-xl border text-xs text-church-800"><p class="font-bold mb-1">Meeting Plan:</p><p id="grp-notes"></p></div>
-            <div class="flex justify-end space-x-2"><button onclick="closeModal('group-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Close</button><button id="btn-join-group" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Join Group</button></div>
+            <div class="flex justify-end space-x-2">
+                <button type="button" onclick="closeModal('group-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Close</button>
+                <button type="button" id="btn-join-group" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Join Group</button>
+            </div>
         </div>
     </div>
 
     <div id="all-groups-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-xl w-full p-6 space-y-4 border">
-            <div class="flex items-center justify-between border-b pb-3"><h3 class="font-bold text-church-900"><i class="fa-solid fa-users text-amber-700 mr-1"></i> Active Groups</h3><button onclick="closeModal('all-groups-modal')" class="text-lg font-bold">&times;</button></div>
+            <div class="flex items-center justify-between border-b pb-3"><h3 class="font-bold text-church-900"><i class="fa-solid fa-users text-amber-700 mr-1"></i> Active Groups</h3><button type="button" onclick="closeModal('all-groups-modal')" class="text-lg font-bold">&times;</button></div>
             <div id="all-groups-list" class="max-h-[60vh] overflow-y-auto space-y-3 text-xs"></div>
-            <div class="flex justify-end pt-2"><button onclick="closeModal('all-groups-modal')" class="px-4 py-2 bg-church-800 text-white rounded-xl text-xs font-semibold">Close</button></div>
+            <div class="flex justify-end pt-2"><button type="button" onclick="closeModal('all-groups-modal')" class="px-4 py-2 bg-church-800 text-white rounded-xl text-xs font-semibold">Close</button></div>
         </div>
     </div>
 
@@ -607,7 +637,10 @@
                 <div><label class="font-bold block mb-1">Pick-up Time</label><input id="borrow-pickup-time" type="time" value="10:00" class="w-full p-2 border rounded-lg bg-church-50"></div>
             </div>
             <div class="text-xs"><label class="font-bold block mb-1">Return Date</label><input id="borrow-due-date" type="date" class="w-full p-2 border rounded-lg bg-church-50 font-bold"></div>
-            <div class="flex justify-end space-x-2"><button onclick="closeModal('borrow-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="submitBorrowRequest()" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Confirm Request</button></div>
+            <div class="flex justify-end space-x-2">
+                <button type="button" onclick="closeModal('borrow-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button>
+                <button type="button" onclick="submitBorrowRequest()" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Confirm Request</button>
+            </div>
         </div>
     </div>
 
@@ -620,56 +653,106 @@
                 <div><label class="font-bold block mb-1">Date</label><input id="onsite-date" type="date" class="w-full p-2 border rounded-lg bg-church-50"></div>
                 <div><label class="font-bold block mb-1">Time Slot</label><input id="onsite-time" type="time" value="14:00" class="w-full p-2 border rounded-lg bg-church-50"></div>
             </div>
-            <div class="flex justify-end space-x-2"><button onclick="closeModal('onsite-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="submitOnsiteSchedule()" class="px-5 py-2 bg-amber-700 text-white rounded-xl text-xs font-bold">Reserve Slot</button></div>
+            <div class="flex justify-end space-x-2">
+                <button type="button" onclick="closeModal('onsite-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button>
+                <button type="button" onclick="submitOnsiteSchedule()" class="px-5 py-2 bg-amber-700 text-white rounded-xl text-xs font-bold">Reserve Slot</button>
+            </div>
         </div>
     </div>
 
-    <!-- Storage Intake & Distribute Modals -->
+    <!-- Storage Intake Modal -->
     <div id="storage-intake-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border">
             <h3 class="text-base font-bold text-church-900"><i class="fa-solid fa-boxes-packing text-amber-800"></i> Stock Intake</h3>
             <div class="space-y-2 text-xs">
-                <input id="intake-title" type="text" placeholder="Title" class="w-full p-2 border rounded-xl bg-church-50 font-bold">
-                <input id="intake-author" type="text" placeholder="Author" class="w-full p-2 border rounded-xl bg-church-50">
+                <label class="font-bold">Title</label><input id="intake-title" type="text" placeholder="e.g. Pilgrim's Progress" class="w-full p-2 border rounded-xl bg-church-50 font-bold">
+                <label class="font-bold">Author</label><input id="intake-author" type="text" placeholder="e.g. John Bunyan" class="w-full p-2 border rounded-xl bg-church-50">
                 <div class="grid grid-cols-2 gap-2">
-                    <select id="intake-category" class="w-full p-2 border rounded-xl bg-church-50"><option>Evangelism</option><option>Bibles</option><option>Theology</option><option>Other</option></select>
-                    <select id="intake-acq-type" class="w-full p-2 border rounded-xl bg-church-50"><option>Donation</option><option>Purchased</option><option>Specific Sponsor</option></select>
+                    <div><label class="font-bold">Category</label><select id="intake-category" class="w-full p-2 border rounded-xl bg-church-50"><option>Evangelism</option><option>Bibles</option><option>Theology</option><option>Other</option></select></div>
+                    <div><label class="font-bold">Acquisition</label><select id="intake-acq-type" class="w-full p-2 border rounded-xl bg-church-50"><option>Donation</option><option>Purchased</option><option>Specific Sponsor</option></select></div>
                 </div>
-                <input id="intake-source" type="text" placeholder="Funding Source / Donor" class="w-full p-2 border rounded-xl bg-church-50">
+                <label class="font-bold">Source / Donor</label><input id="intake-source" type="text" placeholder="Funding Source / Donor" class="w-full p-2 border rounded-xl bg-church-50">
                 <div class="grid grid-cols-2 gap-2">
                     <div><label class="block font-bold">Copies</label><input id="intake-copies" type="number" min="1" value="10" class="w-full p-2 border rounded-xl bg-church-50"></div>
                     <div><label class="block font-bold">Date</label><input id="intake-date" type="date" class="w-full p-2 border rounded-xl bg-church-50"></div>
                 </div>
             </div>
-            <div class="flex justify-end space-x-2 pt-2"><button onclick="closeModal('storage-intake-modal')" class="px-4 py-2 border rounded-xl text-xs">Cancel</button><button onclick="submitStorageIntake()" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Save Intake</button></div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button type="button" onclick="closeModal('storage-intake-modal')" class="px-4 py-2 border rounded-xl text-xs">Cancel</button>
+                <button type="button" onclick="submitStorageIntake()" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Save Intake</button>
+            </div>
         </div>
     </div>
 
+    <!-- Storage Distribute Modal -->
     <div id="storage-distribute-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border">
             <h3 class="text-base font-bold text-church-900"><i class="fa-solid fa-hand-holding-heart text-amber-800"></i> Record Book Distribution</h3>
             <div class="space-y-3 text-xs">
                 <div><label class="font-bold block mb-1">Select Storage Book</label><select id="dist-item-select" onchange="updateDistributionMax()" class="w-full p-2 border rounded-xl bg-church-50 font-bold"></select><p id="dist-available-hint" class="text-[11px] text-emerald-700 font-bold mt-1"></p></div>
-                <input id="dist-recipient" type="text" placeholder="Recipient / Ministry" class="w-full p-2 border rounded-xl bg-church-50">
+                <div><label class="font-bold block mb-1">Recipient / Ministry</label><input id="dist-recipient" type="text" placeholder="e.g. Agano School Students" class="w-full p-2 border rounded-xl bg-church-50"></div>
                 <div class="grid grid-cols-2 gap-2">
                     <div><label class="font-bold block mb-1">Qty Given</label><input id="dist-qty" type="number" min="1" value="1" class="w-full p-2 border rounded-xl bg-church-50 font-bold"></div>
                     <div><label class="font-bold block mb-1">Date</label><input id="dist-date" type="date" class="w-full p-2 border rounded-xl bg-church-50"></div>
                 </div>
                 <div><label class="font-bold block mb-1">Notes</label><input id="dist-notes" type="text" placeholder="Purpose / Notes" class="w-full p-2 border rounded-xl bg-church-50"></div>
             </div>
-            <div class="flex justify-end space-x-2 pt-2"><button onclick="closeModal('storage-distribute-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="submitDistributionRecord()" class="px-5 py-2 bg-amber-700 text-white rounded-xl text-xs font-bold">Confirm Distribute</button></div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button type="button" onclick="closeModal('storage-distribute-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button>
+                <button type="button" onclick="submitDistributionRecord()" class="px-5 py-2 bg-amber-700 text-white rounded-xl text-xs font-bold">Confirm Distribute</button>
+            </div>
         </div>
     </div>
 
     <!-- Circulation Action Modals -->
-    <div id="issue-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 border"><h3 class="font-bold text-church-900">Physical Book Checkout</h3><p class="text-xs text-church-600">Book: <strong id="issue-modal-book"></strong></p><div class="text-xs"><label class="font-bold block mb-1">Date Issued</label><input id="issue-date-input" type="date" class="w-full p-2 border rounded-xl bg-church-50 font-bold"><label class="font-bold block mt-2 mb-1">Condition Issued</label><select id="issue-condition-select" class="w-full p-2 border rounded-xl bg-church-50"><option>Good</option><option>Old</option><option>Torn</option></select></div><div class="flex justify-end space-x-2"><button onclick="closeModal('issue-modal')" class="px-4 py-2 border rounded-xl text-xs">Cancel</button><button onclick="confirmAdminIssue()" class="px-5 py-2 bg-emerald-700 text-white rounded-xl text-xs font-bold">Confirm Checkout</button></div></div></div>
-    <div id="return-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 border"><h3 class="font-bold text-church-900">Process Returned Book</h3><p class="text-xs text-church-600">Book: <strong id="return-modal-book"></strong></p><div class="text-xs"><label class="font-bold block mb-1">Return Date</label><input id="return-date-input" type="date" class="w-full p-2 border rounded-xl bg-church-50 font-bold"><label class="font-bold block mt-2 mb-1">Condition Returned</label><select id="return-condition-select" class="w-full p-2 border rounded-xl bg-church-50"><option>Good / Normal</option><option>Torn / Stained</option></select><label class="font-bold block mt-2 mb-1">Penalty Warranted?</label><select id="return-penalty-select" class="w-full p-2 border rounded-xl bg-church-50"><option>None</option><option>Late Return</option><option>Damage</option></select></div><div class="flex justify-end space-x-2"><button onclick="closeModal('return-modal')" class="px-4 py-2 border rounded-xl text-xs">Cancel</button><button onclick="confirmAdminReturn()" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Complete Return</button></div></div></div>
-    
-    <div id="my-requests-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-xl w-full p-6 space-y-4 border"><div class="flex items-center justify-between border-b pb-3"><h3 class="font-bold text-church-900">My Borrow Requests & Loans</h3><button onclick="closeModal('my-requests-modal')" class="text-lg font-bold">&times;</button></div><div id="my-requests-list" class="max-h-[60vh] overflow-y-auto space-y-2 text-xs"></div><div class="flex justify-end pt-2"><button onclick="closeModal('my-requests-modal')" class="px-4 py-2 bg-church-800 text-white rounded-xl text-xs font-semibold">Close</button></div></div></div>
+    <div id="issue-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 border">
+            <h3 class="font-bold text-church-900">Physical Book Checkout</h3>
+            <p class="text-xs text-church-600">Book: <strong id="issue-modal-book"></strong></p>
+            <div class="text-xs">
+                <label class="font-bold block mb-1">Date Issued</label>
+                <input id="issue-date-input" type="date" class="w-full p-2 border rounded-xl bg-church-50 font-bold">
+                <label class="font-bold block mt-2 mb-1">Condition Issued</label>
+                <select id="issue-condition-select" class="w-full p-2 border rounded-xl bg-church-50"><option>Good</option><option>Old</option><option>Torn</option></select>
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button type="button" onclick="closeModal('issue-modal')" class="px-4 py-2 border rounded-xl text-xs">Cancel</button>
+                <button type="button" onclick="confirmAdminIssue()" class="px-5 py-2 bg-emerald-700 text-white rounded-xl text-xs font-bold">Confirm Checkout</button>
+            </div>
+        </div>
+    </div>
 
-    <!-- Scripts -->
+    <div id="return-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 border">
+            <h3 class="font-bold text-church-900">Process Returned Book</h3>
+            <p class="text-xs text-church-600">Book: <strong id="return-modal-book"></strong></p>
+            <div class="text-xs">
+                <label class="font-bold block mb-1">Return Date</label>
+                <input id="return-date-input" type="date" class="w-full p-2 border rounded-xl bg-church-50 font-bold">
+                <label class="font-bold block mt-2 mb-1">Condition Returned</label>
+                <select id="return-condition-select" class="w-full p-2 border rounded-xl bg-church-50"><option>Good / Normal</option><option>Torn / Stained</option></select>
+                <label class="font-bold block mt-2 mb-1">Penalty Warranted?</label>
+                <select id="return-penalty-select" class="w-full p-2 border rounded-xl bg-church-50"><option>None</option><option>Late Return</option><option>Damage</option></select>
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button type="button" onclick="closeModal('return-modal')" class="px-4 py-2 border rounded-xl text-xs">Cancel</button>
+                <button type="button" onclick="confirmAdminReturn()" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Complete Return</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- User Personal Requests Modal -->
+    <div id="my-requests-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-xl w-full p-6 space-y-4 border">
+            <div class="flex items-center justify-between border-b pb-3"><h3 class="font-bold text-church-900">My Borrow Requests & Loans</h3><button type="button" onclick="closeModal('my-requests-modal')" class="text-lg font-bold">&times;</button></div>
+            <div id="my-requests-list" class="max-h-[60vh] overflow-y-auto space-y-2 text-xs"></div>
+            <div class="flex justify-end pt-2"><button type="button" onclick="closeModal('my-requests-modal')" class="px-4 py-2 bg-church-800 text-white rounded-xl text-xs font-semibold">Close</button></div>
+        </div>
+    </div>
+
+    <!-- Scripts (PWA + App logic) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js?v=9.6"></script>
+    <script src="script.js?v=9.8"></script>
     <script>
         let newWorker;
         if ('serviceWorker' in navigator) {
