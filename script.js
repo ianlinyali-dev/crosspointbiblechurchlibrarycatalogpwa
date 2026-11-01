@@ -366,12 +366,13 @@ function openMyRequestsModal() {
     document.getElementById('my-requests-modal').classList.remove('hidden');
 }
 
-// ---------------- GROUP READING ----------------
+// ---------------- GROUP READING (W/ Edit & Delete) ----------------
 function updateGroupBadges() {
     const openGroups = allGroups.filter(g => g.Status === 'Open').length;
     if(document.getElementById('nav-group-count')) document.getElementById('nav-group-count').textContent = openGroups;
     if(document.getElementById('mobile-nav-group-count')) document.getElementById('mobile-nav-group-count').textContent = openGroups;
 }
+
 function openAllGroupsModal() {
     const list = document.getElementById('all-groups-list');
     const openGroups = allGroups.filter(g => g.Status === 'Open');
@@ -380,15 +381,29 @@ function openAllGroupsModal() {
         list.innerHTML = openGroups.map(g => {
             const members = (g.JoinedMemberIDs || "").toString().split(',').filter(Boolean);
             const rem = Math.max(0, g.MaxLimit - members.length);
-            return `<div class="p-3 bg-church-50 rounded-xl border flex justify-between items-center"><div><p class="font-bold text-church-900">${g.BookTitle}</p><p class="text-[11px] text-church-600">Leader: <strong>${g.LeaderName}</strong></p><p class="text-[10px] text-amber-800 font-semibold mt-1">${rem} spots remaining</p></div><button onclick="joinGroupReading('${g.GroupID}')" class="px-3 py-1.5 bg-church-800 text-white rounded-lg font-bold text-xs">Join</button></div>`;
+            
+            let actionBtns = '';
+            const isLeader = currentUser && String(currentUser.id).toUpperCase() === String(g.LeaderID).toUpperCase();
+            const canDelete = isLibrarianActive || isLeader;
+            
+            if (canDelete) actionBtns += `<button onclick="deleteGroup('${g.GroupID}')" class="text-red-600 hover:text-red-800 p-1 mr-2" title="Delete Group"><i class="fa-solid fa-trash"></i></button>`;
+            if (isLeader) actionBtns += `<button onclick="openEditGroupModal('${g.GroupID}')" class="text-blue-600 hover:text-blue-800 p-1 mr-2" title="Edit Group"><i class="fa-solid fa-pen-to-square"></i></button>`;
+            
+            if (!currentUser) actionBtns += `<button onclick="joinGroupReading('${g.GroupID}')" class="px-3 py-1.5 bg-church-800 text-white rounded-lg font-bold text-xs">Join</button>`;
+            else if (!members.includes(currentUser.id)) actionBtns += `<button onclick="joinGroupReading('${g.GroupID}')" class="px-3 py-1.5 bg-church-800 text-white rounded-lg font-bold text-xs">Join</button>`;
+            else if (members.includes(currentUser.id) && !isLeader) actionBtns += `<span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-1 rounded font-bold">Joined</span>`;
+
+            return `<div class="p-3 bg-church-50 rounded-xl border flex justify-between items-center"><div><p class="font-bold text-church-900">${g.BookTitle}</p><p class="text-[11px] text-church-600">Leader: <strong>${g.LeaderName}</strong></p><p class="text-[10px] text-amber-800 font-semibold mt-1">${rem} spots remaining</p></div><div class="flex items-center">${actionBtns}</div></div>`;
         }).join('');
     }
     document.getElementById('all-groups-modal').classList.remove('hidden');
 }
+
 function openCreateGroupModal() {
     if (!currentUser) { openLoginModal(); return; }
     closeModal('book-modal'); document.getElementById('create-group-modal').classList.remove('hidden');
 }
+
 async function submitCreateGroup() {
     if (!currentUser) return;
     const limit = document.getElementById('create-grp-limit').value; const notes = document.getElementById('create-grp-notes').value;
@@ -397,6 +412,38 @@ async function submitCreateGroup() {
     if (error) { alert(error.message); return; }
     allGroups.push(mapGroup(obj)); closeModal('create-group-modal'); updateGroupBadges(); initCatalog(); alert("Group reading circle published!");
 }
+
+function openEditGroupModal(id) {
+    const g = allGroups.find(x => x.GroupID === id); if (!g) return;
+    document.getElementById('edit-grp-id').value = g.GroupID;
+    document.getElementById('edit-grp-limit').value = g.MaxLimit;
+    document.getElementById('edit-grp-notes').value = g.MeetingNotes || '';
+    closeModal('all-groups-modal'); document.getElementById('edit-group-modal').classList.remove('hidden');
+}
+
+async function submitEditGroup() {
+    const id = document.getElementById('edit-grp-id').value;
+    const limit = parseInt(document.getElementById('edit-grp-limit').value);
+    const notes = document.getElementById('edit-grp-notes').value;
+    
+    const g = allGroups.find(x => x.GroupID === id); if (!g) return;
+    const members = (g.JoinedMemberIDs || "").toString().split(',').filter(Boolean);
+    const newStatus = members.length >= limit ? 'Full' : 'Open';
+    
+    const { error } = await supabaseClient.from('group_readings').update({ max_limit: limit, meeting_notes: notes, status: newStatus }).eq('group_id', id);
+    if (error) { alert("Error updating group: " + error.message); return; }
+    
+    g.MaxLimit = limit; g.MeetingNotes = notes; g.Status = newStatus;
+    closeModal('edit-group-modal'); updateGroupBadges(); initCatalog(); openAllGroupsModal(); alert("Group reading updated!");
+}
+
+async function deleteGroup(id) {
+    if (!confirm("Are you sure you want to delete this group reading?")) return;
+    const { error } = await supabaseClient.from('group_readings').delete().eq('group_id', id);
+    if (error) { alert("Error deleting group: " + error.message); return; }
+    allGroups = allGroups.filter(g => g.GroupID !== id); updateGroupBadges(); initCatalog(); openAllGroupsModal();
+}
+
 function openGroupModal(id) {
     const g = allGroups.find(x => x.GroupID === id); if (!g) return;
     document.getElementById('grp-book-title').textContent = g.BookTitle; document.getElementById('grp-leader').textContent = g.LeaderName; document.getElementById('grp-notes').textContent = g.MeetingNotes || "No notes.";
@@ -405,6 +452,7 @@ function openGroupModal(id) {
     document.getElementById('btn-join-group').onclick = () => joinGroupReading(g.GroupID);
     document.getElementById('group-modal').classList.remove('hidden');
 }
+
 async function joinGroupReading(id) {
     if (!currentUser) { openLoginModal(); return; }
     const g = allGroups.find(x => x.GroupID === id); if (!g) return;
@@ -444,7 +492,6 @@ function updateLibrarianUI() {
 }
 function switchAdminTab(t) { ['circulation', 'stock', 'storage', 'members', 'analytics'].forEach(x => document.getElementById(`admin-window-${x}`)?.classList.toggle('hidden', x !== t)); }
 
-// WHATSAPP AUTOMATION
 function triggerBorrowerWhatsApp(memberId, memberName, bookTitle, stage, dueDate) {
     const mem = allMembers.find(m => String(m.MemberID).toUpperCase() === String(memberId).toUpperCase());
     const phone = mem && mem.Phone ? mem.Phone : null;
@@ -477,13 +524,18 @@ function renderCirculationTable() {
     if (!tb) return;
     tb.innerHTML = list.map(b => {
         let btns = '';
-        if (b.Status === 'Pending') btns = `<button onclick="approveBorrow('${b.BorrowID}')" class="bg-blue-700 text-white px-2 py-1 rounded text-xs font-bold">Approve</button>`;
+        if (b.Status === 'Pending') btns = `<button onclick="approveBorrow('${b.BorrowID}')" class="bg-blue-700 text-white px-2 py-1 rounded text-xs font-bold">Approve</button> <button onclick="rejectBorrow('${b.BorrowID}')" class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold ml-1">Reject</button>`;
         else if (b.Status === 'Approved') btns = `<button onclick="openIssueModal('${b.BorrowID}')" class="bg-emerald-700 text-white px-2 py-1 rounded text-xs font-bold">Issue</button>`;
         else if (b.Status === 'Active') btns = `<button onclick="adminExtendLoan('${b.BorrowID}')" class="bg-church-600 text-white px-2 py-1 rounded text-xs mr-1">+2 Wks</button><button onclick="openReturnModal('${b.BorrowID}')" class="bg-black text-white px-2 py-1 rounded text-xs">Return</button>`;
         return `<tr class="hover:bg-church-50 border-b"><td class="p-3 font-bold">${b.BookTitle}</td><td class="p-3">${b.MemberName}<br><span class="text-[10px] text-church-500">${b.MemberID}</span></td><td class="p-3">${b.PickupDate}</td><td class="p-3 font-bold">${b.DueDate}</td><td class="p-3 font-bold text-[10px]">${b.Status}</td><td class="p-3"><button onclick="triggerBorrowerWhatsApp('${b.MemberID}', '${b.MemberName}', '${b.BookTitle.replace(/'/g,"\\'")}', '${b.Status}', '${b.DueDate}')" class="text-emerald-700 border border-emerald-300 rounded px-1.5 py-0.5 text-[10px] bg-emerald-50">WhatsApp</button></td><td class="p-3 text-right whitespace-nowrap">${btns}</td></tr>`;
     }).join('');
 }
 async function approveBorrow(id) { const { error } = await supabaseClient.from('borrows').update({ status: 'Approved' }).eq('borrow_id', id); if (!error) { const b = allBorrows.find(x => x.BorrowID === id); if (b) b.Status = 'Approved'; renderAdminTables(); initCatalog(); } }
+async function rejectBorrow(id) {
+    if (!confirm("Are you sure you want to reject this request?")) return;
+    const { error } = await supabaseClient.from('borrows').update({ status: 'Rejected' }).eq('borrow_id', id);
+    if (!error) { const b = allBorrows.find(x => x.BorrowID === id); if (b) b.Status = 'Rejected'; renderAdminTables(); initCatalog(); } else { alert("Error rejecting request: " + error.message); }
+}
 function openIssueModal(id) { targetIssueBorrow = allBorrows.find(b => b.BorrowID === id); document.getElementById('issue-modal-book').textContent = targetIssueBorrow.BookTitle; document.getElementById('issue-date-input').value = new Date().toISOString().split('T')[0]; document.getElementById('issue-modal').classList.remove('hidden'); }
 async function confirmAdminIssue() { const date = document.getElementById('issue-date-input').value; const cond = document.getElementById('issue-condition-select').value; const { error } = await supabaseClient.from('borrows').update({ status: 'Active', issued_date: date, condition_issued: cond }).eq('borrow_id', targetIssueBorrow.BorrowID); if (!error) { targetIssueBorrow.Status = 'Active'; targetIssueBorrow.IssuedDate = date; targetIssueBorrow.ConditionIssued = cond; closeModal('issue-modal'); renderAdminTables(); initCatalog(); } }
 function openReturnModal(id) { targetReturnBorrow = allBorrows.find(b => b.BorrowID === id); document.getElementById('return-modal-book').textContent = targetReturnBorrow.BookTitle; document.getElementById('return-date-input').value = new Date().toISOString().split('T')[0]; document.getElementById('return-modal').classList.remove('hidden'); }
@@ -613,6 +665,7 @@ async function submitStorageIntake() {
     const { error } = await supabaseClient.from('storage_stock').insert([obj]); if (error) { alert(error.message); return; }
     allStorageStock.unshift(mapStorage(obj)); closeModal('storage-intake-modal'); renderStorageTables();
 }
+
 function openEditStorageModal(id) {
     const item = allStorageStock.find(s => s.ItemID === id); if (!item) return;
     document.getElementById('edit-storage-id').value = item.ItemID; document.getElementById('edit-storage-title').value = item.Title; document.getElementById('edit-storage-author').value = item.Author || ''; document.getElementById('edit-storage-category').value = item.Category || 'Other'; document.getElementById('edit-storage-acq-type').value = item.AcquisitionType || 'Donation'; document.getElementById('edit-storage-source').value = item.Source || ''; document.getElementById('edit-storage-copies').value = item.TotalReceived; document.getElementById('edit-storage-date').value = item.DateReceived;
@@ -634,6 +687,7 @@ async function deleteStorage(id) {
     if (error) { alert("Cannot delete. It may be linked to distribution logs."); return; }
     alert("Storage item deleted!"); fetchAdminBackgroundData();
 }
+
 function openStorageDistributeModal(p) {
     const s = document.getElementById('dist-item-select'); s.innerHTML = allStorageStock.filter(x => x.RemainingStock > 0).map(x => `<option value="${x.ItemID}" ${x.ItemID === p ? 'selected' : ''}>${x.Title} (${x.RemainingStock} left)</option>`).join('');
     document.getElementById('dist-date').value = new Date().toISOString().split('T')[0];
@@ -775,7 +829,7 @@ function closeModal(id) {
     if (el) el.classList.add('hidden'); 
 }
 window.addEventListener('click', (e) => { 
-    ['login-modal', 'book-modal', 'borrow-modal', 'onsite-modal', 'admin-pin-modal', 'add-book-modal', 'edit-book-modal', 'storage-intake-modal', 'edit-storage-modal', 'storage-distribute-modal', 'issue-modal', 'return-modal', 'edit-member-modal', 'my-requests-modal', 'create-group-modal', 'group-modal', 'all-groups-modal', 'admin-settings-modal'].forEach(id => { 
+    ['login-modal', 'book-modal', 'borrow-modal', 'onsite-modal', 'admin-pin-modal', 'add-book-modal', 'edit-book-modal', 'storage-intake-modal', 'edit-storage-modal', 'storage-distribute-modal', 'issue-modal', 'return-modal', 'edit-member-modal', 'my-requests-modal', 'create-group-modal', 'edit-group-modal', 'group-modal', 'all-groups-modal', 'admin-settings-modal'].forEach(id => { 
         const el = document.getElementById(id); 
         if (el && e.target === el) el.classList.add('hidden'); 
     }); 
