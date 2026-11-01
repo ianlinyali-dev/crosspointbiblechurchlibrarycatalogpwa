@@ -289,7 +289,6 @@ async function loginMember() {
 }
 function logoutUser() { localStorage.removeItem('cbc_user'); currentUser = null; updateUserAuthUI(); }
 
-// BORROW LIMIT ENFORCEMENT
 function checkBorrowLimit() {
     if (!currentUser) return false;
     const activeLoans = allBorrows.filter(b => String(b.MemberID).toUpperCase() === String(currentUser.id).toUpperCase() && ['Pending', 'Approved', 'Active'].includes(b.Status));
@@ -496,21 +495,10 @@ function openAddBookModal() { document.getElementById('add-book-modal').classLis
 async function submitNewBook() {
     const title = document.getElementById('add-book-title').value.trim();
     if (!title) { alert("Title is required."); return; }
-    
-    const obj = {
-        title: title,
-        author: document.getElementById('add-book-author').value.trim() || 'Unknown',
-        category: document.getElementById('add-book-category').value,
-        classification: document.getElementById('add-book-class').value,
-        copies: parseInt(document.getElementById('add-book-copies').value) || 1,
-        pages: parseInt(document.getElementById('add-book-pages').value) || 200,
-        description: document.getElementById('add-book-desc').value.trim(),
-        image: document.getElementById('add-book-img').value.trim() || 'images/churchdiscipline.jpeg'
-    };
-
+    const maxId = allBooks.length > 0 ? Math.max(...allBooks.map(b => parseInt(b.id))) : 0;
+    const obj = { id: maxId + 1, title: title, author: document.getElementById('add-book-author').value.trim() || 'Unknown', category: document.getElementById('add-book-category').value, classification: document.getElementById('add-book-class').value, copies: parseInt(document.getElementById('add-book-copies').value) || 1, pages: parseInt(document.getElementById('add-book-pages').value) || 200, description: document.getElementById('add-book-desc').value.trim(), image: document.getElementById('add-book-img').value.trim() || 'images/churchdiscipline.jpeg' };
     const { error } = await supabaseClient.from('books').insert([obj]);
     if (error) { alert("Error adding book: " + error.message); return; }
-
     document.getElementById('add-book-title').value = ''; document.getElementById('add-book-author').value = ''; document.getElementById('add-book-desc').value = '';
     closeModal('add-book-modal'); alert("Book successfully added to Catalog!"); fetchLibraryDataFromSupabase();
 }
@@ -625,7 +613,6 @@ async function submitStorageIntake() {
     const { error } = await supabaseClient.from('storage_stock').insert([obj]); if (error) { alert(error.message); return; }
     allStorageStock.unshift(mapStorage(obj)); closeModal('storage-intake-modal'); renderStorageTables();
 }
-
 function openEditStorageModal(id) {
     const item = allStorageStock.find(s => s.ItemID === id); if (!item) return;
     document.getElementById('edit-storage-id').value = item.ItemID; document.getElementById('edit-storage-title').value = item.Title; document.getElementById('edit-storage-author').value = item.Author || ''; document.getElementById('edit-storage-category').value = item.Category || 'Other'; document.getElementById('edit-storage-acq-type').value = item.AcquisitionType || 'Donation'; document.getElementById('edit-storage-source').value = item.Source || ''; document.getElementById('edit-storage-copies').value = item.TotalReceived; document.getElementById('edit-storage-date').value = item.DateReceived;
@@ -647,19 +634,31 @@ async function deleteStorage(id) {
     if (error) { alert("Cannot delete. It may be linked to distribution logs."); return; }
     alert("Storage item deleted!"); fetchAdminBackgroundData();
 }
-
 function openStorageDistributeModal(p) {
     const s = document.getElementById('dist-item-select'); s.innerHTML = allStorageStock.filter(x => x.RemainingStock > 0).map(x => `<option value="${x.ItemID}" ${x.ItemID === p ? 'selected' : ''}>${x.Title} (${x.RemainingStock} left)</option>`).join('');
-    document.getElementById('dist-date').value = new Date().toISOString().split('T')[0]; document.getElementById('storage-distribute-modal').classList.remove('hidden'); updateDistributionMax();
+    document.getElementById('dist-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('dist-recipient').value = '';
+    document.getElementById('dist-qty').value = '1';
+    const notesEl = document.getElementById('dist-notes'); if(notesEl) notesEl.value = '';
+    document.getElementById('storage-distribute-modal').classList.remove('hidden'); updateDistributionMax();
 }
 function updateDistributionMax() {
     const i = allStorageStock.find(x => x.ItemID === document.getElementById('dist-item-select').value);
     if(i && document.getElementById('dist-available-hint')) document.getElementById('dist-available-hint').textContent = `${i.RemainingStock} copies available.`;
 }
 async function submitDistributionRecord() {
-    const id = document.getElementById('dist-item-select').value; const i = allStorageStock.find(x => x.ItemID === id); const q = parseInt(document.getElementById('dist-qty').value) || 1;
-    if (q > i.RemainingStock) { alert("Not enough stock!"); return; }
-    const obj = { log_id: "DST-" + Date.now(), item_id: id, book_title: i.Title, recipient: document.getElementById('dist-recipient').value, quantity: q, date: document.getElementById('dist-date').value };
+    const id = document.getElementById('dist-item-select').value; const i = allStorageStock.find(x => x.ItemID === id);
+    if (!i) { alert("Please select a valid item."); return; }
+    const q = parseInt(document.getElementById('dist-qty').value) || 1;
+    const recipient = document.getElementById('dist-recipient').value.trim();
+    const notes = document.getElementById('dist-notes')?.value.trim() || '';
+    const date = document.getElementById('dist-date').value;
+
+    if (!recipient) { alert("Please provide a recipient."); return; }
+    if (q > i.RemainingStock) { alert(`Not enough stock! Only ${i.RemainingStock} copies left.`); return; }
+    if (q < 1) { alert("Quantity must be at least 1."); return; }
+
+    const obj = { log_id: "DST-" + Date.now(), item_id: id, book_title: i.Title, recipient: recipient, quantity: q, date: date, notes: notes };
     await supabaseClient.from('distribution_logs').insert([obj]); await supabaseClient.from('storage_stock').update({ total_distributed: i.TotalDistributed + q, remaining_stock: i.RemainingStock - q }).eq('item_id', id);
     i.TotalDistributed += q; i.RemainingStock -= q; allDistributionLogs.unshift(mapDist(obj)); closeModal('storage-distribute-modal'); renderStorageTables(); alert("Distributed!");
 }
@@ -771,7 +770,6 @@ function exportAnalyticsCSV() {
     downloadCSV(headers, rows, "CBC_Borrow_Analytics");
 }
 
-// Global Modal Closer (Fixed to target exact unique IDs dynamically constructed above)
 function closeModal(id) { 
     const el = document.getElementById(id);
     if (el) el.classList.add('hidden'); 
