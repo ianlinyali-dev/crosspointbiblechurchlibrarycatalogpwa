@@ -104,7 +104,7 @@ async function fetchLibraryDataFromSupabase() {
         }
 
         initCatalog(); updateGroupBadges(); renderCirculationCounts();
-        if (isLibrarianActive) renderAdminTables();
+        if (isLibrarianActive) { renderAdminTables(); renderAdminAlerts(); }
         fetchAdminBackgroundData();
     } catch (err) { 
         console.warn("Fetch Error:", err.message); 
@@ -330,6 +330,7 @@ async function submitBorrowRequest() {
 
     allBorrows.unshift(mapBorrow(obj));
     closeModal('borrow-modal'); initCatalog(); renderCirculationCounts();
+    if(isLibrarianActive) renderAdminAlerts();
     alert("Borrow Request Submitted successfully! Await librarian approval.");
 }
 
@@ -356,6 +357,7 @@ async function submitOnsiteSchedule() {
 
     allBorrows.unshift(mapBorrow(obj));
     closeModal('onsite-modal'); initCatalog(); renderCirculationCounts();
+    if(isLibrarianActive) renderAdminAlerts();
     alert(`Your reading desk slot for ${date} at ${time} is recorded!`);
 }
 
@@ -458,10 +460,12 @@ async function joinGroupReading(id) {
     const g = allGroups.find(x => x.GroupID === id); if (!g) return;
     let members = (g.JoinedMemberIDs || "").toString().split(',').filter(Boolean);
     if (members.includes(currentUser.id)) { alert("You have already joined this group!"); return; }
+    
     members.push(currentUser.id);
     const newStatus = members.length >= g.MaxLimit ? 'Full' : 'Open';
     const { error } = await supabaseClient.from('group_readings').update({ joined_member_ids: members.join(','), status: newStatus }).eq('group_id', id);
     if (error) { alert(error.message); return; }
+    
     g.JoinedMemberIDs = members.join(','); g.Status = newStatus;
     closeModal('group-modal'); closeModal('all-groups-modal'); updateGroupBadges(); initCatalog(); alert("Successfully joined the group!");
 }
@@ -483,7 +487,7 @@ function openAdminPinModal() {
 function submitAdminPin() {
     if (document.getElementById('admin-pin-input').value.trim() === "1234") {
         isLibrarianActive = true; sessionStorage.setItem('cbc_librarian_active', 'true');
-        closeModal('admin-pin-modal'); updateLibrarianUI(); renderAdminTables(); window.location.hash = "admin-panel";
+        closeModal('admin-pin-modal'); updateLibrarianUI(); renderAdminTables(); renderAdminAlerts(); window.location.hash = "admin-panel";
     } else alert("Incorrect PIN.");
 }
 function updateLibrarianUI() {
@@ -492,6 +496,46 @@ function updateLibrarianUI() {
 }
 function switchAdminTab(t) { ['circulation', 'stock', 'storage', 'members', 'analytics'].forEach(x => document.getElementById(`admin-window-${x}`)?.classList.toggle('hidden', x !== t)); }
 
+// LIBRARIAN ACTION CENTER (ALERTS)
+function renderAdminAlerts() {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    
+    const pending = allBorrows.filter(b => b.Status === 'Pending');
+    const overdue = allBorrows.filter(b => {
+        if (b.Status !== 'Active') return false;
+        return new Date(b.DueDate) < today;
+    });
+    const dueSoon = allBorrows.filter(b => {
+        if (b.Status !== 'Active') return false;
+        const d = new Date(b.DueDate);
+        const diffDays = Math.ceil(Math.abs(d - today) / (1000 * 60 * 60 * 24)); 
+        return d >= today && diffDays <= 2;
+    });
+
+    const actionCenter = document.getElementById('librarian-action-center');
+    const actionContent = document.getElementById('action-center-content');
+    
+    if (pending.length === 0 && overdue.length === 0 && dueSoon.length === 0) {
+        if(actionCenter) actionCenter.classList.add('hidden');
+        return;
+    }
+    
+    if(actionCenter) actionCenter.classList.remove('hidden');
+    let html = '';
+    if (pending.length > 0) {
+        html += `<button onclick="switchAdminTab('circulation'); filterCirculationStatus('Pending');" class="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm transition">🟡 ${pending.length} Pending Requests</button>`;
+    }
+    if (overdue.length > 0) {
+        html += `<button onclick="switchAdminTab('circulation'); filterCirculationStatus('Overdue');" class="bg-red-100 hover:bg-red-200 text-red-900 border border-red-300 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm transition">🔴 ${overdue.length} Overdue Books</button>`;
+    }
+    if (dueSoon.length > 0) {
+        html += `<button onclick="switchAdminTab('circulation'); filterCirculationStatus('Active');" class="bg-orange-100 hover:bg-orange-200 text-orange-900 border border-orange-300 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm transition">🟠 ${dueSoon.length} Due Soon (<= 2 Days)</button>`;
+    }
+    if(actionContent) actionContent.innerHTML = html;
+}
+
+// WHATSAPP AUTOMATION
 function triggerBorrowerWhatsApp(memberId, memberName, bookTitle, stage, dueDate) {
     const mem = allMembers.find(m => String(m.MemberID).toUpperCase() === String(memberId).toUpperCase());
     const phone = mem && mem.Phone ? mem.Phone : null;
@@ -510,24 +554,49 @@ function triggerBorrowerWhatsApp(memberId, memberName, bookTitle, stage, dueDate
 }
 
 // ---------------- CIRCULATION ----------------
-function filterCirculationStatus(s) { currentCirculationFilter = s; renderCirculationTable(); }
+function filterCirculationStatus(s) { 
+    currentCirculationFilter = s; 
+    document.querySelectorAll('.circ-filter-btn').forEach(btn => {
+        if(btn.getAttribute('data-filter') === s) {
+            btn.classList.add('ring-2', 'ring-church-800', 'ring-offset-1');
+        } else {
+            btn.classList.remove('ring-2', 'ring-church-800', 'ring-offset-1');
+        }
+    });
+    renderCirculationTable(); 
+}
+
 function renderCirculationCounts() {
     const pend = allBorrows.filter(b => b.Status === 'Pending').length;
     if(document.getElementById('badge-pending-count')) document.getElementById('badge-pending-count').textContent = pend;
 }
 function renderAdminTables() {
-    renderCirculationCounts(); renderCirculationTable(); renderStockAuditTable(); renderStorageTables(); renderMembersTable(); applyAnalyticsTimelineFilter();
+    renderCirculationCounts(); renderCirculationTable(); renderStockAuditTable(); renderStorageTables(); renderMembersTable(); applyAnalyticsTimelineFilter(); renderAdminAlerts();
 }
 function renderCirculationTable() {
     const tb = document.getElementById('admin-borrows-tbody');
-    let list = currentCirculationFilter === 'All' ? allBorrows : allBorrows.filter(b => b.Status === currentCirculationFilter);
     if (!tb) return;
+    
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    
+    let list = allBorrows;
+    if (currentCirculationFilter === 'Overdue') {
+        list = allBorrows.filter(b => b.Status === 'Active' && new Date(b.DueDate) < today);
+    } else if (currentCirculationFilter !== 'All') {
+        list = allBorrows.filter(b => b.Status === currentCirculationFilter);
+    }
+
     tb.innerHTML = list.map(b => {
         let btns = '';
         if (b.Status === 'Pending') btns = `<button onclick="approveBorrow('${b.BorrowID}')" class="bg-blue-700 text-white px-2 py-1 rounded text-xs font-bold">Approve</button> <button onclick="rejectBorrow('${b.BorrowID}')" class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold ml-1">Reject</button>`;
         else if (b.Status === 'Approved') btns = `<button onclick="openIssueModal('${b.BorrowID}')" class="bg-emerald-700 text-white px-2 py-1 rounded text-xs font-bold">Issue</button>`;
         else if (b.Status === 'Active') btns = `<button onclick="adminExtendLoan('${b.BorrowID}')" class="bg-church-600 text-white px-2 py-1 rounded text-xs mr-1">+2 Wks</button><button onclick="openReturnModal('${b.BorrowID}')" class="bg-black text-white px-2 py-1 rounded text-xs">Return</button>`;
-        return `<tr class="hover:bg-church-50 border-b"><td class="p-3 font-bold">${b.BookTitle}</td><td class="p-3">${b.MemberName}<br><span class="text-[10px] text-church-500">${b.MemberID}</span></td><td class="p-3">${b.PickupDate}</td><td class="p-3 font-bold">${b.DueDate}</td><td class="p-3 font-bold text-[10px]">${b.Status}</td><td class="p-3"><button onclick="triggerBorrowerWhatsApp('${b.MemberID}', '${b.MemberName}', '${b.BookTitle.replace(/'/g,"\\'")}', '${b.Status}', '${b.DueDate}')" class="text-emerald-700 border border-emerald-300 rounded px-1.5 py-0.5 text-[10px] bg-emerald-50">WhatsApp</button></td><td class="p-3 text-right whitespace-nowrap">${btns}</td></tr>`;
+        
+        let overdueFlag = '';
+        if (b.Status === 'Active' && new Date(b.DueDate) < today) overdueFlag = `<br><span class="text-[10px] text-red-600 font-bold">OVERDUE</span>`;
+
+        return `<tr class="hover:bg-church-50 border-b"><td class="p-3 font-bold">${b.BookTitle}</td><td class="p-3">${b.MemberName}<br><span class="text-[10px] text-church-500">${b.MemberID}</span></td><td class="p-3 font-bold">${b.DueDate} ${overdueFlag}</td><td class="p-3 font-bold text-[10px]">${b.Status}</td><td class="p-3"><button onclick="triggerBorrowerWhatsApp('${b.MemberID}', '${b.MemberName}', '${b.BookTitle.replace(/'/g,"\\'")}', '${b.Status}', '${b.DueDate}')" class="text-emerald-700 border border-emerald-300 rounded px-1.5 py-0.5 text-[10px] bg-emerald-50">WhatsApp</button></td><td class="p-3 text-right whitespace-nowrap">${btns}</td></tr>`;
     }).join('');
 }
 async function approveBorrow(id) { const { error } = await supabaseClient.from('borrows').update({ status: 'Approved' }).eq('borrow_id', id); if (!error) { const b = allBorrows.find(x => x.BorrowID === id); if (b) b.Status = 'Approved'; renderAdminTables(); initCatalog(); } }
@@ -547,10 +616,24 @@ function openAddBookModal() { document.getElementById('add-book-modal').classLis
 async function submitNewBook() {
     const title = document.getElementById('add-book-title').value.trim();
     if (!title) { alert("Title is required."); return; }
+    
     const maxId = allBooks.length > 0 ? Math.max(...allBooks.map(b => parseInt(b.id))) : 0;
-    const obj = { id: maxId + 1, title: title, author: document.getElementById('add-book-author').value.trim() || 'Unknown', category: document.getElementById('add-book-category').value, classification: document.getElementById('add-book-class').value, copies: parseInt(document.getElementById('add-book-copies').value) || 1, pages: parseInt(document.getElementById('add-book-pages').value) || 200, description: document.getElementById('add-book-desc').value.trim(), image: document.getElementById('add-book-img').value.trim() || 'images/churchdiscipline.jpeg' };
+    
+    const obj = {
+        id: maxId + 1,
+        title: title,
+        author: document.getElementById('add-book-author').value.trim() || 'Unknown',
+        category: document.getElementById('add-book-category').value,
+        classification: document.getElementById('add-book-class').value,
+        copies: parseInt(document.getElementById('add-book-copies').value) || 1,
+        pages: parseInt(document.getElementById('add-book-pages').value) || 200,
+        description: document.getElementById('add-book-desc').value.trim(),
+        image: document.getElementById('add-book-img').value.trim() || 'images/churchdiscipline.jpeg'
+    };
+
     const { error } = await supabaseClient.from('books').insert([obj]);
     if (error) { alert("Error adding book: " + error.message); return; }
+
     document.getElementById('add-book-title').value = ''; document.getElementById('add-book-author').value = ''; document.getElementById('add-book-desc').value = '';
     closeModal('add-book-modal'); alert("Book successfully added to Catalog!"); fetchLibraryDataFromSupabase();
 }
@@ -824,10 +907,6 @@ function exportAnalyticsCSV() {
     downloadCSV(headers, rows, "CBC_Borrow_Analytics");
 }
 
-function closeModal(id) { 
-    const el = document.getElementById(id);
-    if (el) el.classList.add('hidden'); 
-}
 window.addEventListener('click', (e) => { 
     ['login-modal', 'book-modal', 'borrow-modal', 'onsite-modal', 'admin-pin-modal', 'add-book-modal', 'edit-book-modal', 'storage-intake-modal', 'edit-storage-modal', 'storage-distribute-modal', 'issue-modal', 'return-modal', 'edit-member-modal', 'my-requests-modal', 'create-group-modal', 'edit-group-modal', 'group-modal', 'all-groups-modal', 'admin-settings-modal'].forEach(id => { 
         const el = document.getElementById(id); 
