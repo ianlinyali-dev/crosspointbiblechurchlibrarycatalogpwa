@@ -1,0 +1,30 @@
+/* Custom smooth scroll behaviors and strict mobile boundary locking */
+html, body {
+    scroll-behavior: smooth;
+    overflow-x: hidden; /* Prevents mobile horizontal stretching/squishing */
+    width: 100%;
+    max-width: 100vw;
+    -webkit-tap-highlight-color: transparent; /* Removes blue tap highlight on mobile */
+}
+
+/* Custom scrollbars for a clean look */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px; /* Added height for horizontal table scrolling */
+}
+::-webkit-scrollbar-track {
+    background: #fdfbf7;
+}
+::-webkit-scrollbar-thumb {
+    background: #eddcc5;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #8b5a2b;
+}
+
+/* Allow tables to scroll sideways smoothly on phones without breaking page width */
+.overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    max-width: 100vw;
+}
