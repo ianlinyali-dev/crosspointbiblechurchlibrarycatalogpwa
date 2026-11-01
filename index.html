@@ -53,7 +53,6 @@
             </div>
 
             <nav class="hidden md:flex items-center space-x-6 text-sm font-medium">
-                <!-- Hidden Install Button for Desktop -->
                 <button id="install-app-btn-desktop" onclick="installPWA()" class="hidden bg-emerald-700 hover:bg-emerald-800 text-white text-xs px-3 py-1.5 rounded-xl font-bold transition flex items-center space-x-1.5 shadow-sm">
                     <i class="fa-solid fa-download"></i><span>Install App</span>
                 </button>
@@ -75,7 +74,6 @@
 
         <div id="mobile-menu" class="hidden md:hidden bg-white border-b border-church-200 px-4 pt-2 pb-4 space-y-3">
             <div id="mobile-user-auth-badge" class="pb-2 border-b border-church-100"></div>
-            <!-- Hidden Install Button for Mobile -->
             <button id="install-app-btn-mobile" onclick="installPWA()" class="hidden w-full text-left py-2 text-emerald-700 font-bold hover:bg-church-50 rounded px-2 flex items-center justify-between border border-emerald-200 bg-emerald-50 mb-2">
                 <span><i class="fa-solid fa-download mr-1"></i> Install App</span>
             </button>
@@ -189,7 +187,6 @@
 
             <!-- WINDOW 2: CATALOG STOCK AUDIT -->
             <div id="admin-window-stock" class="hidden space-y-6">
-                <!-- KPI Cards -->
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     <div class="bg-church-50 p-4 rounded-2xl border border-church-200">
                         <p class="text-[11px] uppercase font-bold text-church-600">Total Book Titles</p>
@@ -218,10 +215,7 @@
                         </div>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
-                        <div>
-                            <label class="block font-semibold mb-1 text-church-700">Search Title / Author</label>
-                            <input id="stock-search-input" oninput="renderStockAuditTable()" type="text" placeholder="Search..." class="w-full p-2 border rounded-xl bg-white">
-                        </div>
+                        <div><label class="block font-semibold mb-1 text-church-700">Search Title / Author</label><input id="stock-search-input" oninput="renderStockAuditTable()" type="text" placeholder="Search..." class="w-full p-2 border rounded-xl bg-white"></div>
                         <div>
                             <label class="block font-semibold mb-1 text-church-700">Category</label>
                             <select id="stock-category-filter" onchange="renderStockAuditTable()" class="w-full p-2 border rounded-xl bg-white">
@@ -237,20 +231,9 @@
                         </div>
                         <div>
                             <label class="block font-semibold mb-1 text-church-700">Access Rule</label>
-                            <select id="stock-classification-filter" onchange="renderStockAuditTable()" class="w-full p-2 border rounded-xl bg-white">
-                                <option value="">All Rules</option>
-                                <option value="Borrowable">Borrowable Only</option>
-                                <option value="Onsite Only">Onsite Only</option>
-                            </select>
+                            <select id="stock-classification-filter" onchange="renderStockAuditTable()" class="w-full p-2 border rounded-xl bg-white"><option value="">All Rules</option><option value="Borrowable">Borrowable Only</option><option value="Onsite Only">Onsite Only</option></select>
                         </div>
-                        <div>
-                            <label class="block font-semibold mb-1 text-church-700">Availability</label>
-                            <select id="stock-availability-filter" onchange="renderStockAuditTable()" class="w-full p-2 border rounded-xl bg-white">
-                                <option value="">All</option>
-                                <option value="available">Available (> 0)</option>
-                                <option value="out">Out of Stock</option>
-                            </select>
-                        </div>
+                        <div><label class="block font-semibold mb-1 text-church-700">Availability</label><select id="stock-availability-filter" onchange="renderStockAuditTable()" class="w-full p-2 border rounded-xl bg-white"><option value="">All</option><option value="available">Available (> 0)</option><option value="out">Out of Stock</option></select></div>
                     </div>
                 </div>
                 <div class="overflow-x-auto border border-church-200 rounded-2xl bg-white">
@@ -287,7 +270,7 @@
                 <div id="storage-view-stock" class="overflow-x-auto border border-church-200 rounded-2xl bg-white">
                     <table class="w-full text-left text-xs border-collapse">
                         <thead class="bg-church-100 text-church-800 uppercase font-semibold text-[11px]">
-                            <tr><th class="p-3 whitespace-nowrap">ID</th><th class="p-3 whitespace-nowrap min-w-[150px]">Title & Author</th><th class="p-3 whitespace-nowrap">Source</th><th class="p-3 whitespace-nowrap">Date</th><th class="p-3 text-center whitespace-nowrap">Received</th><th class="p-3 text-center whitespace-nowrap">Dist.</th><th class="p-3 text-center text-emerald-800 whitespace-nowrap">In Storage</th><th class="p-3 text-right whitespace-nowrap">Quick Dist.</th></tr>
+                            <tr><th class="p-3 whitespace-nowrap">ID</th><th class="p-3 whitespace-nowrap min-w-[150px]">Title & Author</th><th class="p-3 whitespace-nowrap">Source</th><th class="p-3 whitespace-nowrap">Date</th><th class="p-3 text-center whitespace-nowrap">Received</th><th class="p-3 text-center whitespace-nowrap">Dist.</th><th class="p-3 text-center text-emerald-800 whitespace-nowrap">In Storage</th><th class="p-3 text-right whitespace-nowrap">Actions</th></tr>
                         </thead>
                         <tbody id="storage-stock-tbody" class="divide-y divide-church-100"></tbody>
                     </table>
@@ -387,10 +370,10 @@
                     </table>
                 </div>
             </div>
+
         </div>
     </section>
 
-    <!-- Footer -->
     <footer id="about-us" class="bg-church-900 text-church-100 pt-12 pb-8 mt-auto">
         <div class="max-w-7xl mx-auto px-4 text-center text-xs text-church-400">&copy; Crosspoint Bible Church Library. Built for the glory of God.</div>
     </footer>
@@ -462,6 +445,62 @@
         </div>
     </div>
 
+    <!-- NEW: Edit Storage Modal -->
+    <div id="edit-storage-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border">
+            <h3 class="text-base font-bold text-church-900"><i class="fa-solid fa-pen-to-square text-amber-800"></i> Edit Storage Item</h3>
+            <div class="space-y-2 text-xs">
+                <input type="hidden" id="edit-storage-id">
+                <input id="edit-storage-title" type="text" placeholder="Title" class="w-full p-2 border rounded-xl bg-church-50 font-bold">
+                <input id="edit-storage-author" type="text" placeholder="Author" class="w-full p-2 border rounded-xl bg-church-50">
+                <div class="grid grid-cols-2 gap-2">
+                    <select id="edit-storage-category" class="w-full p-2 border rounded-xl bg-church-50">
+                        <option value="Evangelism">Evangelism</option>
+                        <option value="Bibles">Bibles</option>
+                        <option value="Theology">Theology</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <select id="edit-storage-acq-type" class="w-full p-2 border rounded-xl bg-church-50">
+                        <option value="Donation">Donation</option>
+                        <option value="Purchased">Purchased</option>
+                        <option value="Specific Sponsor">Specific Sponsor</option>
+                    </select>
+                </div>
+                <input id="edit-storage-source" type="text" placeholder="Source / Donor" class="w-full p-2 border rounded-xl bg-church-50">
+                <div class="grid grid-cols-2 gap-2">
+                    <div><label class="block font-bold">Total Received</label><input id="edit-storage-copies" type="number" min="1" class="w-full p-2 border rounded-xl bg-church-50"></div>
+                    <div><label class="block font-bold">Date Received</label><input id="edit-storage-date" type="date" class="w-full p-2 border rounded-xl bg-church-50"></div>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2"><button onclick="closeModal('edit-storage-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="submitEditStorage()" class="px-5 py-2 bg-amber-700 hover:bg-amber-800 text-white rounded-xl text-xs font-bold">Save</button></div>
+        </div>
+    </div>
+
+    <!-- NEW: Completely Upgraded Edit Member Modal -->
+    <div id="edit-member-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 border shadow-2xl">
+            <h3 class="font-bold text-church-900 text-base"><i class="fa-solid fa-user-pen text-blue-600 mr-1"></i> Edit Member Details</h3>
+            <p class="text-xs text-church-600 border-b pb-2">Member ID: <strong id="edit-mem-id-display" class="text-church-900"></strong> <br><span class="italic text-[10px] text-red-600">*ID cannot be changed</span></p>
+            <input type="hidden" id="edit-mem-id">
+            <div class="space-y-2 text-xs">
+                <div><label class="font-bold">Full Name</label><input id="edit-mem-name" type="text" class="w-full p-2 border rounded-xl bg-church-50"></div>
+                <div>
+                    <label class="font-bold">Designation</label>
+                    <select id="edit-mem-desig" class="w-full p-2 border rounded-xl bg-church-50">
+                        <option value="Church Member">Church Member</option>
+                        <option value="Regular Attendee">Regular Attendee</option>
+                        <option value="Agano Student">Agano Student</option>
+                        <option value="Pastor">Pastor</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div><label class="font-bold">WhatsApp Phone</label><input id="edit-mem-phone" type="text" class="w-full p-2 border rounded-xl bg-church-50"></div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2"><button onclick="closeModal('edit-member-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="submitEditMember()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold">Save Changes</button></div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
     <div id="login-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl border">
             <h3 class="text-base font-extrabold text-church-900">Member Sign In</h3>
@@ -490,6 +529,7 @@
         </div>
     </div>
 
+    <!-- BOOK Details Modal -->
     <div id="book-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border">
             <div class="bg-church-100 px-6 py-4 flex items-center justify-between border-b">
@@ -518,6 +558,7 @@
         </div>
     </div>
 
+    <!-- Group Reading Modals -->
     <div id="create-group-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 border">
             <h3 class="font-bold text-church-900">Start Group Reading</h3>
@@ -548,6 +589,7 @@
         </div>
     </div>
 
+    <!-- Borrow Modal -->
     <div id="borrow-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl border">
             <h3 class="text-base font-bold text-church-900">Borrow Book Request</h3>
@@ -561,6 +603,7 @@
         </div>
     </div>
 
+    <!-- ONSITE Reading Modal -->
     <div id="onsite-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl border">
             <h3 class="text-base font-bold text-church-900">Schedule Onsite Reading</h3>
@@ -610,12 +653,11 @@
 
     <div id="issue-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 border"><h3 class="font-bold text-church-900">Physical Book Checkout</h3><p class="text-xs text-church-600">Book: <strong id="issue-modal-book"></strong></p><div class="text-xs"><label class="font-bold block mb-1">Date Issued</label><input id="issue-date-input" type="date" class="w-full p-2 border rounded-xl bg-church-50 font-bold"><label class="font-bold block mt-2 mb-1">Condition Issued</label><select id="issue-condition-select" class="w-full p-2 border rounded-xl bg-church-50"><option>Good</option><option>Old</option><option>Torn</option></select></div><div class="flex justify-end space-x-2"><button onclick="closeModal('issue-modal')" class="px-4 py-2 border rounded-xl text-xs">Cancel</button><button onclick="confirmAdminIssue()" class="px-5 py-2 bg-emerald-700 text-white rounded-xl text-xs font-bold">Confirm Checkout</button></div></div></div>
     <div id="return-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 border"><h3 class="font-bold text-church-900">Process Returned Book</h3><p class="text-xs text-church-600">Book: <strong id="return-modal-book"></strong></p><div class="text-xs"><label class="font-bold block mb-1">Return Date</label><input id="return-date-input" type="date" class="w-full p-2 border rounded-xl bg-church-50 font-bold"><label class="font-bold block mt-2 mb-1">Condition Returned</label><select id="return-condition-select" class="w-full p-2 border rounded-xl bg-church-50"><option>Good / Normal</option><option>Torn / Stained</option></select><label class="font-bold block mt-2 mb-1">Penalty Warranted?</label><select id="return-penalty-select" class="w-full p-2 border rounded-xl bg-church-50"><option>None</option><option>Late Return</option><option>Damage</option></select></div><div class="flex justify-end space-x-2"><button onclick="closeModal('return-modal')" class="px-4 py-2 border rounded-xl text-xs">Cancel</button><button onclick="confirmAdminReturn()" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Complete Return</button></div></div></div>
-    <div id="edit-member-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 border"><h3 class="font-bold text-church-900">Update Borrower Phone</h3><p class="text-xs text-church-600">Member: <strong id="edit-mem-name"></strong> (<span id="edit-mem-id"></span>)</p><input id="edit-mem-phone" type="text" placeholder="WhatsApp (e.g. 0712345678)" class="w-full p-2.5 border rounded-xl text-xs bg-church-50 font-bold"><div class="flex justify-end space-x-2"><button onclick="closeModal('edit-member-modal')" class="px-4 py-2 border rounded-xl text-xs">Cancel</button><button onclick="saveMemberContact()" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Save Phone</button></div></div></div>
     <div id="my-requests-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-xl w-full p-6 space-y-4 border"><div class="flex items-center justify-between border-b pb-3"><h3 class="font-bold text-church-900">My Borrow Requests & Loans</h3><button onclick="closeModal('my-requests-modal')" class="text-lg font-bold">&times;</button></div><div id="my-requests-list" class="max-h-[60vh] overflow-y-auto space-y-2 text-xs"></div><div class="flex justify-end pt-2"><button onclick="closeModal('my-requests-modal')" class="px-4 py-2 bg-church-800 text-white rounded-xl text-xs font-semibold">Close</button></div></div></div>
 
     <!-- Scripts (PWA + App logic) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js?v=7.0"></script>
+    <script src="script.js?v=8.0"></script>
     <script>
         let newWorker;
         if ('serviceWorker' in navigator) {
