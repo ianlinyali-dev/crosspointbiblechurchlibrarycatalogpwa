@@ -40,6 +40,7 @@
         <button onclick="document.getElementById('pwa-update-banner').classList.add('hidden')" class="text-church-400 hover:text-white">&times;</button>
     </div>
 
+    <!-- Navigation Header -->
     <header class="bg-white border-b border-church-200 sticky top-0 z-40 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             <div class="flex items-center space-x-3.5">
@@ -187,6 +188,7 @@
 
             <!-- WINDOW 2: CATALOG STOCK AUDIT -->
             <div id="admin-window-stock" class="hidden space-y-6">
+                <!-- KPI Cards -->
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     <div class="bg-church-50 p-4 rounded-2xl border border-church-200">
                         <p class="text-[11px] uppercase font-bold text-church-600">Total Book Titles</p>
@@ -215,7 +217,10 @@
                         </div>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
-                        <div><label class="block font-semibold mb-1 text-church-700">Search Title / Author</label><input id="stock-search-input" oninput="renderStockAuditTable()" type="text" placeholder="Search..." class="w-full p-2 border rounded-xl bg-white"></div>
+                        <div>
+                            <label class="block font-semibold mb-1 text-church-700">Search Title / Author</label>
+                            <input id="stock-search-input" oninput="renderStockAuditTable()" type="text" placeholder="Search..." class="w-full p-2 border rounded-xl bg-white">
+                        </div>
                         <div>
                             <label class="block font-semibold mb-1 text-church-700">Category</label>
                             <select id="stock-category-filter" onchange="renderStockAuditTable()" class="w-full p-2 border rounded-xl bg-white">
@@ -231,9 +236,20 @@
                         </div>
                         <div>
                             <label class="block font-semibold mb-1 text-church-700">Access Rule</label>
-                            <select id="stock-classification-filter" onchange="renderStockAuditTable()" class="w-full p-2 border rounded-xl bg-white"><option value="">All Rules</option><option value="Borrowable">Borrowable Only</option><option value="Onsite Only">Onsite Only</option></select>
+                            <select id="stock-classification-filter" onchange="renderStockAuditTable()" class="w-full p-2 border rounded-xl bg-white">
+                                <option value="">All Rules</option>
+                                <option value="Borrowable">Borrowable Only</option>
+                                <option value="Onsite Only">Onsite Only</option>
+                            </select>
                         </div>
-                        <div><label class="block font-semibold mb-1 text-church-700">Availability</label><select id="stock-availability-filter" onchange="renderStockAuditTable()" class="w-full p-2 border rounded-xl bg-white"><option value="">All</option><option value="available">Available (> 0)</option><option value="out">Out of Stock</option></select></div>
+                        <div>
+                            <label class="block font-semibold mb-1 text-church-700">Availability</label>
+                            <select id="stock-availability-filter" onchange="renderStockAuditTable()" class="w-full p-2 border rounded-xl bg-white">
+                                <option value="">All</option>
+                                <option value="available">Available (> 0)</option>
+                                <option value="out">Out of Stock</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div class="overflow-x-auto border border-church-200 rounded-2xl bg-white">
@@ -328,7 +344,7 @@
                 </div>
             </div>
 
-            <!-- WINDOW 5: ANALYTICS & REPORTS -->
+            <!-- WINDOW 5: ANALYTICS & REPORTS (Borrows) -->
             <div id="admin-window-analytics" class="hidden space-y-6">
                 <div class="bg-church-50 p-4 rounded-2xl border border-church-200 space-y-3">
                     <div class="flex items-center justify-between border-b pb-2">
@@ -374,12 +390,14 @@
         </div>
     </section>
 
+    <!-- Footer -->
     <footer id="about-us" class="bg-church-900 text-church-100 pt-12 pb-8 mt-auto">
         <div class="max-w-7xl mx-auto px-4 text-center text-xs text-church-400">&copy; Crosspoint Bible Church Library. Built for the glory of God.</div>
     </footer>
 
-    <!-- ==================== MODALS ==================== -->
+    <!-- ==================== MODALS (SINGLE UNIQUE INSTANCES) ==================== -->
 
+    <!-- Add Book Modal -->
     <div id="add-book-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border">
             <h3 class="text-base font-bold text-church-900"><i class="fa-solid fa-book-medical text-purple-700"></i> Add Book to Catalog</h3>
@@ -412,6 +430,7 @@
         </div>
     </div>
 
+    <!-- Edit Book Modal -->
     <div id="edit-book-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border">
             <h3 class="text-base font-bold text-church-900"><i class="fa-solid fa-pen-to-square text-blue-600"></i> Edit Book Details</h3>
@@ -445,7 +464,7 @@
         </div>
     </div>
 
-    <!-- NEW: Edit Storage Modal -->
+    <!-- Edit Storage Modal -->
     <div id="edit-storage-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border">
             <h3 class="text-base font-bold text-church-900"><i class="fa-solid fa-pen-to-square text-amber-800"></i> Edit Storage Item</h3>
@@ -476,7 +495,7 @@
         </div>
     </div>
 
-    <!-- NEW: Completely Upgraded Edit Member Modal -->
+    <!-- Edit Member Modal -->
     <div id="edit-member-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 border shadow-2xl">
             <h3 class="font-bold text-church-900 text-base"><i class="fa-solid fa-user-pen text-blue-600 mr-1"></i> Edit Member Details</h3>
@@ -511,6 +530,7 @@
         </div>
     </div>
 
+    <!-- Admin PIN Modal -->
     <div id="admin-pin-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl border">
             <h3 class="text-base font-extrabold text-church-900 text-center">Librarian Access</h3>
@@ -519,6 +539,7 @@
         </div>
     </div>
     
+    <!-- Admin Settings Modal -->
     <div id="admin-settings-modal" class="fixed inset-0 z-[70] hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl border">
             <h3 class="text-base font-bold text-church-900"><i class="fa-solid fa-gear text-church-700 mr-1"></i> Library Admin Settings</h3>
@@ -616,6 +637,7 @@
         </div>
     </div>
 
+    <!-- Storage Intake & Distribute Modals -->
     <div id="storage-intake-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border">
             <h3 class="text-base font-bold text-church-900"><i class="fa-solid fa-boxes-packing text-amber-800"></i> Stock Intake</h3>
@@ -632,7 +654,7 @@
                     <div><label class="block font-bold">Date</label><input id="intake-date" type="date" class="w-full p-2 border rounded-xl bg-church-50"></div>
                 </div>
             </div>
-            <div class="flex justify-end space-x-2 pt-2"><button onclick="closeModal('storage-intake-modal')" class="px-4 py-2 border rounded-xl text-xs">Cancel</button><button onclick="submitStorageIntake()" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Save Intake</button></div>
+            <div class="flex justify-end space-x-2 pt-2"><button onclick="closeModal('storage-intake-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="submitStorageIntake()" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Save Intake</button></div>
         </div>
     </div>
 
@@ -651,13 +673,15 @@
         </div>
     </div>
 
-    <div id="issue-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 border"><h3 class="font-bold text-church-900">Physical Book Checkout</h3><p class="text-xs text-church-600">Book: <strong id="issue-modal-book"></strong></p><div class="text-xs"><label class="font-bold block mb-1">Date Issued</label><input id="issue-date-input" type="date" class="w-full p-2 border rounded-xl bg-church-50 font-bold"><label class="font-bold block mt-2 mb-1">Condition Issued</label><select id="issue-condition-select" class="w-full p-2 border rounded-xl bg-church-50"><option>Good</option><option>Old</option><option>Torn</option></select></div><div class="flex justify-end space-x-2"><button onclick="closeModal('issue-modal')" class="px-4 py-2 border rounded-xl text-xs">Cancel</button><button onclick="confirmAdminIssue()" class="px-5 py-2 bg-emerald-700 text-white rounded-xl text-xs font-bold">Confirm Checkout</button></div></div></div>
-    <div id="return-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 border"><h3 class="font-bold text-church-900">Process Returned Book</h3><p class="text-xs text-church-600">Book: <strong id="return-modal-book"></strong></p><div class="text-xs"><label class="font-bold block mb-1">Return Date</label><input id="return-date-input" type="date" class="w-full p-2 border rounded-xl bg-church-50 font-bold"><label class="font-bold block mt-2 mb-1">Condition Returned</label><select id="return-condition-select" class="w-full p-2 border rounded-xl bg-church-50"><option>Good / Normal</option><option>Torn / Stained</option></select><label class="font-bold block mt-2 mb-1">Penalty Warranted?</label><select id="return-penalty-select" class="w-full p-2 border rounded-xl bg-church-50"><option>None</option><option>Late Return</option><option>Damage</option></select></div><div class="flex justify-end space-x-2"><button onclick="closeModal('return-modal')" class="px-4 py-2 border rounded-xl text-xs">Cancel</button><button onclick="confirmAdminReturn()" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Complete Return</button></div></div></div>
+    <!-- Circulation Desk Modals -->
+    <div id="issue-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 border"><h3 class="font-bold text-church-900">Physical Book Checkout</h3><p class="text-xs text-church-600">Book: <strong id="issue-modal-book"></strong></p><div class="text-xs"><label class="font-bold block mb-1">Date Issued</label><input id="issue-date-input" type="date" class="w-full p-2 border rounded-xl bg-church-50 font-bold"><label class="font-bold block mt-2 mb-1">Condition Issued</label><select id="issue-condition-select" class="w-full p-2 border rounded-xl bg-church-50"><option>Good</option><option>Old</option><option>Torn</option></select></div><div class="flex justify-end space-x-2"><button onclick="closeModal('issue-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="confirmAdminIssue()" class="px-5 py-2 bg-emerald-700 text-white rounded-xl text-xs font-bold">Confirm Checkout</button></div></div></div>
+    <div id="return-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 border"><h3 class="font-bold text-church-900">Process Returned Book</h3><p class="text-xs text-church-600">Book: <strong id="return-modal-book"></strong></p><div class="text-xs"><label class="font-bold block mb-1">Return Date</label><input id="return-date-input" type="date" class="w-full p-2 border rounded-xl bg-church-50 font-bold"><label class="font-bold block mt-2 mb-1">Condition Returned</label><select id="return-condition-select" class="w-full p-2 border rounded-xl bg-church-50"><option>Good / Normal</option><option>Torn / Stained</option></select><label class="font-bold block mt-2 mb-1">Penalty Warranted?</label><select id="return-penalty-select" class="w-full p-2 border rounded-xl bg-church-50"><option>None</option><option>Late Return</option><option>Damage</option></select></div><div class="flex justify-end space-x-2"><button onclick="closeModal('return-modal')" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button><button onclick="confirmAdminReturn()" class="px-5 py-2 bg-church-800 text-white rounded-xl text-xs font-bold">Complete Return</button></div></div></div>
+    
     <div id="my-requests-modal" class="fixed inset-0 z-[60] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"><div class="bg-white rounded-2xl max-w-xl w-full p-6 space-y-4 border"><div class="flex items-center justify-between border-b pb-3"><h3 class="font-bold text-church-900">My Borrow Requests & Loans</h3><button onclick="closeModal('my-requests-modal')" class="text-lg font-bold">&times;</button></div><div id="my-requests-list" class="max-h-[60vh] overflow-y-auto space-y-2 text-xs"></div><div class="flex justify-end pt-2"><button onclick="closeModal('my-requests-modal')" class="px-4 py-2 bg-church-800 text-white rounded-xl text-xs font-semibold">Close</button></div></div></div>
 
-    <!-- Scripts (PWA + App logic) -->
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js?v=8.0"></script>
+    <script src="script.js?v=9.0"></script>
     <script>
         let newWorker;
         if ('serviceWorker' in navigator) {
