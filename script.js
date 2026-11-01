@@ -27,7 +27,6 @@ let targetReturnBorrow = null;
 let targetEditMember = null;
 let currentStorageSubTab = 'stock';
 
-// PWA Install Prompt Variable
 let deferredPrompt;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -166,7 +165,7 @@ function loadMoreBooks() {
         if (activeGroup) {
             const joinedMembers = (activeGroup.JoinedMemberIDs || "").toString().split(',').filter(Boolean);
             const remaining = Math.max(0, activeGroup.MaxLimit - joinedMembers.length);
-            groupHTML = `<button onclick="event.stopPropagation(); openGroupModal('${activeGroup.GroupID}')" class="w-full mt-2 bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 rounded-lg py-1 px-2.5 text-xs flex items-center justify-between transition"><span><i class="fa-solid fa-users text-amber-700 mr-1.5"></i>Group Reading</span><span class="font-bold bg-amber-200 px-1.5 py-0.5 rounded text-[10px]">${remaining} spots left</span></button>`;
+            groupHTML = `<button type="button" onclick="event.stopPropagation(); openGroupModal('${activeGroup.GroupID}')" class="w-full mt-2 bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 rounded-lg py-1 px-2.5 text-xs flex items-center justify-between transition"><span><i class="fa-solid fa-users text-amber-700 mr-1.5"></i>Group Reading</span><span class="font-bold bg-amber-200 px-1.5 py-0.5 rounded text-[10px]">${remaining} spots left</span></button>`;
         }
 
         card.innerHTML = `
@@ -211,9 +210,9 @@ function updateUserAuthUI() {
     const m = document.getElementById('mobile-user-auth-badge');
     let h = currentUser ? `
         <div class="flex space-x-2 text-xs">
-            <button onclick="openMyRequestsModal()" class="bg-church-100 border border-church-300 px-3 py-1.5 rounded-xl font-bold hover:bg-church-200 shadow-sm"><i class="fa-solid fa-user-circle text-amber-700 mr-1"></i>${currentUser.name} (${currentUser.designation})</button>
-            <button onclick="logoutUser()" class="text-red-600 hover:text-red-800 font-bold ml-2">Logout</button>
-        </div>` : `<button onclick="openLoginModal()" class="bg-church-800 text-white text-xs px-3.5 py-2 rounded-xl font-bold shadow-sm hover:bg-church-900"><i class="fa-solid fa-id-card mr-1"></i> Sign In</button>`;
+            <button type="button" onclick="openMyRequestsModal()" class="bg-church-100 border border-church-300 px-3 py-1.5 rounded-xl font-bold hover:bg-church-200 shadow-sm"><i class="fa-solid fa-user-circle text-amber-700 mr-1"></i>${currentUser.name} (${currentUser.designation})</button>
+            <button type="button" onclick="logoutUser()" class="text-red-600 hover:text-red-800 font-bold ml-2">Logout</button>
+        </div>` : `<button type="button" onclick="openLoginModal()" class="bg-church-800 text-white text-xs px-3.5 py-2 rounded-xl font-bold shadow-sm hover:bg-church-900"><i class="fa-solid fa-id-card mr-1"></i> Sign In</button>`;
     if (d) d.innerHTML = h; if (m) m.innerHTML = h;
 }
 
@@ -314,24 +313,28 @@ function openBorrowForm() {
 }
 
 async function submitBorrowRequest() {
-    const date = document.getElementById('borrow-pickup-date').value;
-    const time = document.getElementById('borrow-pickup-time').value;
-    const due = document.getElementById('borrow-due-date').value;
-    if(!date || !time || !due){ alert("Please complete the form"); return; }
+    try {
+        const date = document.getElementById('borrow-pickup-date').value;
+        const time = document.getElementById('borrow-pickup-time').value;
+        const due = document.getElementById('borrow-due-date').value;
+        if(!date || !time || !due){ alert("Please complete the form"); return; }
 
-    const borrowId = "BRW-" + Date.now();
-    const obj = {
-        borrow_id: borrowId, book_id: parseInt(activeBookForAction.id), book_title: activeBookForAction.title, member_id: currentUser.id, 
-        member_name: currentUser.name, member_phone: currentUser.phone || '', type: 'Borrow', pickup_date: date, pickup_time: time, due_date: due, status: 'Pending'
-    };
+        const borrowId = "BRW-" + Date.now();
+        const obj = {
+            borrow_id: borrowId, book_id: parseInt(activeBookForAction.id), book_title: activeBookForAction.title, member_id: currentUser.id, 
+            member_name: currentUser.name, member_phone: currentUser.phone || '', type: 'Borrow', pickup_date: date, pickup_time: time, due_date: due, status: 'Pending'
+        };
 
-    const { error } = await supabaseClient.from('borrows').insert([obj]);
-    if (error) { alert(error.message); return; }
+        const { error } = await supabaseClient.from('borrows').insert([obj]);
+        if (error) { alert("System Error: " + error.message); return; }
 
-    allBorrows.unshift(mapBorrow(obj));
-    closeModal('borrow-modal'); initCatalog(); renderCirculationCounts();
-    if(isLibrarianActive) renderAdminAlerts();
-    alert("Borrow Request Submitted successfully! Await librarian approval.");
+        allBorrows.unshift(mapBorrow(obj));
+        closeModal('borrow-modal'); initCatalog(); renderCirculationCounts();
+        if(isLibrarianActive) renderAdminAlerts();
+        alert("Borrow Request Submitted successfully! Await librarian approval.");
+    } catch (err) {
+        alert("Unexpected Error: " + err.message);
+    }
 }
 
 function openOnsiteScheduleForm() {
@@ -343,22 +346,26 @@ function openOnsiteScheduleForm() {
 }
 
 async function submitOnsiteSchedule() {
-    const date = document.getElementById('onsite-date').value; const time = document.getElementById('onsite-time').value;
-    if(!date || !time) { alert("Date and time required."); return; }
+    try {
+        const date = document.getElementById('onsite-date').value; const time = document.getElementById('onsite-time').value;
+        if(!date || !time) { alert("Date and time required."); return; }
 
-    const borrowId = "BRW-" + Date.now();
-    const obj = {
-        borrow_id: borrowId, book_id: parseInt(activeBookForAction.id), book_title: activeBookForAction.title, member_id: currentUser.id, 
-        member_name: currentUser.name, member_phone: currentUser.phone || '', type: 'Onsite', pickup_date: date, pickup_time: time, due_date: date, status: 'Pending'
-    };
+        const borrowId = "BRW-" + Date.now();
+        const obj = {
+            borrow_id: borrowId, book_id: parseInt(activeBookForAction.id), book_title: activeBookForAction.title, member_id: currentUser.id, 
+            member_name: currentUser.name, member_phone: currentUser.phone || '', type: 'Onsite', pickup_date: date, pickup_time: time, due_date: date, status: 'Pending'
+        };
 
-    const { error } = await supabaseClient.from('borrows').insert([obj]);
-    if (error) { alert(error.message); return; }
+        const { error } = await supabaseClient.from('borrows').insert([obj]);
+        if (error) { alert(error.message); return; }
 
-    allBorrows.unshift(mapBorrow(obj));
-    closeModal('onsite-modal'); initCatalog(); renderCirculationCounts();
-    if(isLibrarianActive) renderAdminAlerts();
-    alert(`Your reading desk slot for ${date} at ${time} is recorded!`);
+        allBorrows.unshift(mapBorrow(obj));
+        closeModal('onsite-modal'); initCatalog(); renderCirculationCounts();
+        if(isLibrarianActive) renderAdminAlerts();
+        alert(`Your reading desk slot for ${date} at ${time} is recorded!`);
+    } catch (err) {
+        alert("Unexpected Error: " + err.message);
+    }
 }
 
 function openMyRequestsModal() {
@@ -368,7 +375,7 @@ function openMyRequestsModal() {
     document.getElementById('my-requests-modal').classList.remove('hidden');
 }
 
-// ---------------- GROUP READING (W/ Edit & Delete) ----------------
+// ---------------- GROUP READING ----------------
 function updateGroupBadges() {
     const openGroups = allGroups.filter(g => g.Status === 'Open').length;
     if(document.getElementById('nav-group-count')) document.getElementById('nav-group-count').textContent = openGroups;
@@ -388,11 +395,11 @@ function openAllGroupsModal() {
             const isLeader = currentUser && String(currentUser.id).toUpperCase() === String(g.LeaderID).toUpperCase();
             const canDelete = isLibrarianActive || isLeader;
             
-            if (canDelete) actionBtns += `<button onclick="deleteGroup('${g.GroupID}')" class="text-red-600 hover:text-red-800 p-1 mr-2" title="Delete Group"><i class="fa-solid fa-trash"></i></button>`;
-            if (isLeader) actionBtns += `<button onclick="openEditGroupModal('${g.GroupID}')" class="text-blue-600 hover:text-blue-800 p-1 mr-2" title="Edit Group"><i class="fa-solid fa-pen-to-square"></i></button>`;
+            if (canDelete) actionBtns += `<button type="button" onclick="deleteGroup('${g.GroupID}')" class="text-red-600 hover:text-red-800 p-1 mr-2" title="Delete Group"><i class="fa-solid fa-trash"></i></button>`;
+            if (isLeader) actionBtns += `<button type="button" onclick="openEditGroupModal('${g.GroupID}')" class="text-blue-600 hover:text-blue-800 p-1 mr-2" title="Edit Group"><i class="fa-solid fa-pen-to-square"></i></button>`;
             
-            if (!currentUser) actionBtns += `<button onclick="joinGroupReading('${g.GroupID}')" class="px-3 py-1.5 bg-church-800 text-white rounded-lg font-bold text-xs">Join</button>`;
-            else if (!members.includes(currentUser.id)) actionBtns += `<button onclick="joinGroupReading('${g.GroupID}')" class="px-3 py-1.5 bg-church-800 text-white rounded-lg font-bold text-xs">Join</button>`;
+            if (!currentUser) actionBtns += `<button type="button" onclick="joinGroupReading('${g.GroupID}')" class="px-3 py-1.5 bg-church-800 text-white rounded-lg font-bold text-xs">Join</button>`;
+            else if (!members.includes(currentUser.id)) actionBtns += `<button type="button" onclick="joinGroupReading('${g.GroupID}')" class="px-3 py-1.5 bg-church-800 text-white rounded-lg font-bold text-xs">Join</button>`;
             else if (members.includes(currentUser.id) && !isLeader) actionBtns += `<span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-1 rounded font-bold">Joined</span>`;
 
             return `<div class="p-3 bg-church-50 rounded-xl border flex justify-between items-center"><div><p class="font-bold text-church-900">${g.BookTitle}</p><p class="text-[11px] text-church-600">Leader: <strong>${g.LeaderName}</strong></p><p class="text-[10px] text-amber-800 font-semibold mt-1">${rem} spots remaining</p></div><div class="flex items-center">${actionBtns}</div></div>`;
@@ -408,11 +415,13 @@ function openCreateGroupModal() {
 
 async function submitCreateGroup() {
     if (!currentUser) return;
-    const limit = document.getElementById('create-grp-limit').value; const notes = document.getElementById('create-grp-notes').value;
-    const obj = { group_id: "GRP-" + Date.now(), book_id: activeBookForAction.id, book_title: activeBookForAction.title, leader_id: currentUser.id, leader_name: currentUser.name, max_limit: parseInt(limit), joined_member_ids: currentUser.id, meeting_notes: notes, status: "Open" };
-    const { error } = await supabaseClient.from('group_readings').insert([obj]);
-    if (error) { alert(error.message); return; }
-    allGroups.push(mapGroup(obj)); closeModal('create-group-modal'); updateGroupBadges(); initCatalog(); alert("Group reading circle published!");
+    try {
+        const limit = document.getElementById('create-grp-limit').value; const notes = document.getElementById('create-grp-notes').value;
+        const obj = { group_id: "GRP-" + Date.now(), book_id: activeBookForAction.id, book_title: activeBookForAction.title, leader_id: currentUser.id, leader_name: currentUser.name, max_limit: parseInt(limit), joined_member_ids: currentUser.id, meeting_notes: notes, status: "Open" };
+        const { error } = await supabaseClient.from('group_readings').insert([obj]);
+        if (error) { alert(error.message); return; }
+        allGroups.push(mapGroup(obj)); closeModal('create-group-modal'); updateGroupBadges(); initCatalog(); alert("Group reading circle published!");
+    } catch (err) { alert(err.message); }
 }
 
 function openEditGroupModal(id) {
@@ -424,19 +433,21 @@ function openEditGroupModal(id) {
 }
 
 async function submitEditGroup() {
-    const id = document.getElementById('edit-grp-id').value;
-    const limit = parseInt(document.getElementById('edit-grp-limit').value);
-    const notes = document.getElementById('edit-grp-notes').value;
-    
-    const g = allGroups.find(x => x.GroupID === id); if (!g) return;
-    const members = (g.JoinedMemberIDs || "").toString().split(',').filter(Boolean);
-    const newStatus = members.length >= limit ? 'Full' : 'Open';
-    
-    const { error } = await supabaseClient.from('group_readings').update({ max_limit: limit, meeting_notes: notes, status: newStatus }).eq('group_id', id);
-    if (error) { alert("Error updating group: " + error.message); return; }
-    
-    g.MaxLimit = limit; g.MeetingNotes = notes; g.Status = newStatus;
-    closeModal('edit-group-modal'); updateGroupBadges(); initCatalog(); openAllGroupsModal(); alert("Group reading updated!");
+    try {
+        const id = document.getElementById('edit-grp-id').value;
+        const limit = parseInt(document.getElementById('edit-grp-limit').value);
+        const notes = document.getElementById('edit-grp-notes').value;
+        
+        const g = allGroups.find(x => x.GroupID === id); if (!g) return;
+        const members = (g.JoinedMemberIDs || "").toString().split(',').filter(Boolean);
+        const newStatus = members.length >= limit ? 'Full' : 'Open';
+        
+        const { error } = await supabaseClient.from('group_readings').update({ max_limit: limit, meeting_notes: notes, status: newStatus }).eq('group_id', id);
+        if (error) { alert("Error updating group: " + error.message); return; }
+        
+        g.MaxLimit = limit; g.MeetingNotes = notes; g.Status = newStatus;
+        closeModal('edit-group-modal'); updateGroupBadges(); initCatalog(); openAllGroupsModal(); alert("Group reading updated!");
+    } catch (err) { alert(err.message); }
 }
 
 async function deleteGroup(id) {
@@ -457,17 +468,17 @@ function openGroupModal(id) {
 
 async function joinGroupReading(id) {
     if (!currentUser) { openLoginModal(); return; }
-    const g = allGroups.find(x => x.GroupID === id); if (!g) return;
-    let members = (g.JoinedMemberIDs || "").toString().split(',').filter(Boolean);
-    if (members.includes(currentUser.id)) { alert("You have already joined this group!"); return; }
-    
-    members.push(currentUser.id);
-    const newStatus = members.length >= g.MaxLimit ? 'Full' : 'Open';
-    const { error } = await supabaseClient.from('group_readings').update({ joined_member_ids: members.join(','), status: newStatus }).eq('group_id', id);
-    if (error) { alert(error.message); return; }
-    
-    g.JoinedMemberIDs = members.join(','); g.Status = newStatus;
-    closeModal('group-modal'); closeModal('all-groups-modal'); updateGroupBadges(); initCatalog(); alert("Successfully joined the group!");
+    try {
+        const g = allGroups.find(x => x.GroupID === id); if (!g) return;
+        let members = (g.JoinedMemberIDs || "").toString().split(',').filter(Boolean);
+        if (members.includes(currentUser.id)) { alert("You have already joined this group!"); return; }
+        members.push(currentUser.id);
+        const newStatus = members.length >= g.MaxLimit ? 'Full' : 'Open';
+        const { error } = await supabaseClient.from('group_readings').update({ joined_member_ids: members.join(','), status: newStatus }).eq('group_id', id);
+        if (error) { alert(error.message); return; }
+        g.JoinedMemberIDs = members.join(','); g.Status = newStatus;
+        closeModal('group-modal'); closeModal('all-groups-modal'); updateGroupBadges(); initCatalog(); alert("Successfully joined the group!");
+    } catch (err) { alert(err.message); }
 }
 
 // ---------------- LIBRARIAN CONSOLE ----------------
@@ -509,7 +520,7 @@ function renderAdminAlerts() {
     const dueSoon = allBorrows.filter(b => {
         if (b.Status !== 'Active') return false;
         const d = new Date(b.DueDate);
-        const diffDays = Math.ceil(Math.abs(d - today) / (1000 * 60 * 60 * 24)); 
+        const diffDays = Math.ceil((d - today) / (1000 * 60 * 60 * 24)); 
         return d >= today && diffDays <= 2;
     });
 
@@ -524,13 +535,13 @@ function renderAdminAlerts() {
     if(actionCenter) actionCenter.classList.remove('hidden');
     let html = '';
     if (pending.length > 0) {
-        html += `<button onclick="switchAdminTab('circulation'); filterCirculationStatus('Pending');" class="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm transition">🟡 ${pending.length} Pending Requests</button>`;
+        html += `<button type="button" onclick="switchAdminTab('circulation'); filterCirculationStatus('Pending');" class="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm transition">🟡 ${pending.length} Pending Requests</button>`;
     }
     if (overdue.length > 0) {
-        html += `<button onclick="switchAdminTab('circulation'); filterCirculationStatus('Overdue');" class="bg-red-100 hover:bg-red-200 text-red-900 border border-red-300 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm transition">🔴 ${overdue.length} Overdue Books</button>`;
+        html += `<button type="button" onclick="switchAdminTab('circulation'); filterCirculationStatus('Overdue');" class="bg-red-100 hover:bg-red-200 text-red-900 border border-red-300 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm transition">🔴 ${overdue.length} Overdue Books</button>`;
     }
     if (dueSoon.length > 0) {
-        html += `<button onclick="switchAdminTab('circulation'); filterCirculationStatus('Active');" class="bg-orange-100 hover:bg-orange-200 text-orange-900 border border-orange-300 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm transition">🟠 ${dueSoon.length} Due Soon (<= 2 Days)</button>`;
+        html += `<button type="button" onclick="switchAdminTab('circulation'); filterCirculationStatus('Active');" class="bg-orange-100 hover:bg-orange-200 text-orange-900 border border-orange-300 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm transition">🟠 ${dueSoon.length} Due Soon (<= 2 Days)</button>`;
     }
     if(actionContent) actionContent.innerHTML = html;
 }
@@ -589,14 +600,14 @@ function renderCirculationTable() {
 
     tb.innerHTML = list.map(b => {
         let btns = '';
-        if (b.Status === 'Pending') btns = `<button onclick="approveBorrow('${b.BorrowID}')" class="bg-blue-700 text-white px-2 py-1 rounded text-xs font-bold">Approve</button> <button onclick="rejectBorrow('${b.BorrowID}')" class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold ml-1">Reject</button>`;
-        else if (b.Status === 'Approved') btns = `<button onclick="openIssueModal('${b.BorrowID}')" class="bg-emerald-700 text-white px-2 py-1 rounded text-xs font-bold">Issue</button>`;
-        else if (b.Status === 'Active') btns = `<button onclick="adminExtendLoan('${b.BorrowID}')" class="bg-church-600 text-white px-2 py-1 rounded text-xs mr-1">+2 Wks</button><button onclick="openReturnModal('${b.BorrowID}')" class="bg-black text-white px-2 py-1 rounded text-xs">Return</button>`;
+        if (b.Status === 'Pending') btns = `<button type="button" onclick="approveBorrow('${b.BorrowID}')" class="bg-blue-700 text-white px-2 py-1 rounded text-xs font-bold">Approve</button> <button type="button" onclick="rejectBorrow('${b.BorrowID}')" class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold ml-1">Reject</button>`;
+        else if (b.Status === 'Approved') btns = `<button type="button" onclick="openIssueModal('${b.BorrowID}')" class="bg-emerald-700 text-white px-2 py-1 rounded text-xs font-bold">Issue</button>`;
+        else if (b.Status === 'Active') btns = `<button type="button" onclick="adminExtendLoan('${b.BorrowID}')" class="bg-church-600 text-white px-2 py-1 rounded text-xs mr-1">+2 Wks</button><button type="button" onclick="openReturnModal('${b.BorrowID}')" class="bg-black text-white px-2 py-1 rounded text-xs">Return</button>`;
         
         let overdueFlag = '';
         if (b.Status === 'Active' && new Date(b.DueDate) < today) overdueFlag = `<br><span class="text-[10px] text-red-600 font-bold">OVERDUE</span>`;
 
-        return `<tr class="hover:bg-church-50 border-b"><td class="p-3 font-bold">${b.BookTitle}</td><td class="p-3">${b.MemberName}<br><span class="text-[10px] text-church-500">${b.MemberID}</span></td><td class="p-3 font-bold">${b.DueDate} ${overdueFlag}</td><td class="p-3 font-bold text-[10px]">${b.Status}</td><td class="p-3"><button onclick="triggerBorrowerWhatsApp('${b.MemberID}', '${b.MemberName}', '${b.BookTitle.replace(/'/g,"\\'")}', '${b.Status}', '${b.DueDate}')" class="text-emerald-700 border border-emerald-300 rounded px-1.5 py-0.5 text-[10px] bg-emerald-50">WhatsApp</button></td><td class="p-3 text-right whitespace-nowrap">${btns}</td></tr>`;
+        return `<tr class="hover:bg-church-50 border-b"><td class="p-3 font-bold">${b.BookTitle}</td><td class="p-3">${b.MemberName}<br><span class="text-[10px] text-church-500">${b.MemberID}</span></td><td class="p-3 font-bold">${b.DueDate} ${overdueFlag}</td><td class="p-3 font-bold text-[10px]">${b.Status}</td><td class="p-3"><button type="button" onclick="triggerBorrowerWhatsApp('${b.MemberID}', '${b.MemberName}', '${b.BookTitle.replace(/'/g,"\\'")}', '${b.Status}', '${b.DueDate}')" class="text-emerald-700 border border-emerald-300 rounded px-1.5 py-0.5 text-[10px] bg-emerald-50">WhatsApp</button></td><td class="p-3 text-right whitespace-nowrap">${btns}</td></tr>`;
     }).join('');
 }
 async function approveBorrow(id) { const { error } = await supabaseClient.from('borrows').update({ status: 'Approved' }).eq('borrow_id', id); if (!error) { const b = allBorrows.find(x => x.BorrowID === id); if (b) b.Status = 'Approved'; renderAdminTables(); initCatalog(); } }
@@ -614,28 +625,31 @@ async function adminExtendLoan(id) { const b = allBorrows.find(x => x.BorrowID =
 // ---------------- ADD, EDIT, DELETE BOOKS ----------------
 function openAddBookModal() { document.getElementById('add-book-modal').classList.remove('hidden'); }
 async function submitNewBook() {
-    const title = document.getElementById('add-book-title').value.trim();
-    if (!title) { alert("Title is required."); return; }
-    
-    const maxId = allBooks.length > 0 ? Math.max(...allBooks.map(b => parseInt(b.id))) : 0;
-    
-    const obj = {
-        id: maxId + 1,
-        title: title,
-        author: document.getElementById('add-book-author').value.trim() || 'Unknown',
-        category: document.getElementById('add-book-category').value,
-        classification: document.getElementById('add-book-class').value,
-        copies: parseInt(document.getElementById('add-book-copies').value) || 1,
-        pages: parseInt(document.getElementById('add-book-pages').value) || 200,
-        description: document.getElementById('add-book-desc').value.trim(),
-        image: document.getElementById('add-book-img').value.trim() || 'images/churchdiscipline.jpeg'
-    };
+    try {
+        const title = document.getElementById('add-book-title').value.trim();
+        if (!title) { alert("Title is required."); return; }
+        
+        const obj = {
+            title: title,
+            author: document.getElementById('add-book-author').value.trim() || 'Unknown',
+            category: document.getElementById('add-book-category').value,
+            classification: document.getElementById('add-book-class').value,
+            copies: parseInt(document.getElementById('add-book-copies').value) || 1,
+            pages: parseInt(document.getElementById('add-book-pages').value) || 200,
+            description: document.getElementById('add-book-desc').value.trim(),
+            image: document.getElementById('add-book-img').value.trim() || 'images/churchdiscipline.jpeg'
+        };
 
-    const { error } = await supabaseClient.from('books').insert([obj]);
-    if (error) { alert("Error adding book: " + error.message); return; }
+        const { data, error } = await supabaseClient.from('books').insert([obj]).select();
+        if (error) { alert("Error adding book: " + error.message); return; }
 
-    document.getElementById('add-book-title').value = ''; document.getElementById('add-book-author').value = ''; document.getElementById('add-book-desc').value = '';
-    closeModal('add-book-modal'); alert("Book successfully added to Catalog!"); fetchLibraryDataFromSupabase();
+        document.getElementById('add-book-title').value = ''; document.getElementById('add-book-author').value = ''; document.getElementById('add-book-desc').value = '';
+        closeModal('add-book-modal'); 
+        alert("Book successfully added to Catalog!"); 
+        fetchLibraryDataFromSupabase();
+    } catch(err) {
+        alert("System error: " + err.message);
+    }
 }
 function openEditBookModal(id) {
     const book = allBooks.find(b => b.id === id); if (!book) return;
@@ -643,19 +657,23 @@ function openEditBookModal(id) {
     document.getElementById('edit-book-modal').classList.remove('hidden');
 }
 async function submitEditBook() {
-    const id = parseInt(document.getElementById('edit-book-id').value);
-    const title = document.getElementById('edit-book-title').value.trim();
-    if (!title) { alert("Title is required."); return; }
-    const obj = { title: title, author: document.getElementById('edit-book-author').value.trim() || 'Unknown', category: document.getElementById('edit-book-category').value, classification: document.getElementById('edit-book-class').value, copies: parseInt(document.getElementById('edit-book-copies').value) || 1, pages: parseInt(document.getElementById('edit-book-pages').value) || 200, description: document.getElementById('edit-book-desc').value.trim(), image: document.getElementById('edit-book-img').value.trim() || 'images/churchdiscipline.jpeg' };
-    const { error } = await supabaseClient.from('books').update(obj).eq('id', id);
-    if (error) { alert("Error updating book: " + error.message); return; }
-    closeModal('edit-book-modal'); alert("Book successfully updated!"); fetchLibraryDataFromSupabase();
+    try {
+        const id = parseInt(document.getElementById('edit-book-id').value);
+        const title = document.getElementById('edit-book-title').value.trim();
+        if (!title) { alert("Title is required."); return; }
+        const obj = { title: title, author: document.getElementById('edit-book-author').value.trim() || 'Unknown', category: document.getElementById('edit-book-category').value, classification: document.getElementById('edit-book-class').value, copies: parseInt(document.getElementById('edit-book-copies').value) || 1, pages: parseInt(document.getElementById('edit-book-pages').value) || 200, description: document.getElementById('edit-book-desc').value.trim(), image: document.getElementById('edit-book-img').value.trim() || 'images/churchdiscipline.jpeg' };
+        const { error } = await supabaseClient.from('books').update(obj).eq('id', id);
+        if (error) { alert("Error updating book: " + error.message); return; }
+        closeModal('edit-book-modal'); alert("Book successfully updated!"); fetchLibraryDataFromSupabase();
+    } catch (err) { alert(err.message); }
 }
 async function deleteBook(id) {
     if (!confirm("Are you sure you want to PERMANENTLY delete this book from the catalog?")) return;
-    const { error } = await supabaseClient.from('books').delete().eq('id', id);
-    if (error) { alert("Error deleting book: " + error.message); return; }
-    alert("Book removed from catalog!"); fetchLibraryDataFromSupabase();
+    try {
+        const { error } = await supabaseClient.from('books').delete().eq('id', id);
+        if (error) { alert("Error deleting book: " + error.message); return; }
+        alert("Book removed from catalog!"); fetchLibraryDataFromSupabase();
+    } catch(err) { alert(err.message); }
 }
 
 function renderStockAuditTable() {
@@ -685,7 +703,7 @@ function renderStockAuditTable() {
 
     tb.innerHTML = list.map(b => { 
         const a = calculateAvailableCopies(b.id, b.copies); 
-        return `<tr class="border-b"><td class="p-3 font-mono">#${b.id}</td><td class="p-3 font-bold">${b.title} <br><span class="text-[10px] font-normal text-church-500">By ${b.author}</span></td><td class="p-3">${b.category}</td><td class="p-3 text-[10px] font-bold">${b.classification}</td><td class="p-3 text-center">${b.copies}</td><td class="p-3 text-center text-amber-800">${b.copies - a}</td><td class="p-3 text-center text-emerald-700 font-bold">${a}</td><td class="p-3 text-center">${a > 0 ? '<span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[10px]">In Stock</span>' : '<span class="bg-red-100 text-red-800 px-1.5 py-0.5 rounded text-[10px]">Out</span>'}</td><td class="p-3 text-right whitespace-nowrap"><button onclick="openEditBookModal(${b.id})" class="text-blue-600 hover:text-blue-800 mr-2" title="Edit Book"><i class="fa-solid fa-pen-to-square"></i></button><button onclick="deleteBook(${b.id})" class="text-red-600 hover:text-red-800" title="Delete Book"><i class="fa-solid fa-trash"></i></button></td></tr>`; 
+        return `<tr class="border-b"><td class="p-3 font-mono">#${b.id}</td><td class="p-3 font-bold">${b.title} <br><span class="text-[10px] font-normal text-church-500">By ${b.author}</span></td><td class="p-3">${b.category}</td><td class="p-3 text-[10px] font-bold">${b.classification}</td><td class="p-3 text-center">${b.copies}</td><td class="p-3 text-center text-amber-800">${b.copies - a}</td><td class="p-3 text-center text-emerald-700 font-bold">${a}</td><td class="p-3 text-center">${a > 0 ? '<span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[10px]">In Stock</span>' : '<span class="bg-red-100 text-red-800 px-1.5 py-0.5 rounded text-[10px]">Out</span>'}</td><td class="p-3 text-right whitespace-nowrap"><button type="button" onclick="openEditBookModal(${b.id})" class="text-blue-600 hover:text-blue-800 mr-2" title="Edit Book"><i class="fa-solid fa-pen-to-square"></i></button><button type="button" onclick="deleteBook(${b.id})" class="text-red-600 hover:text-red-800" title="Delete Book"><i class="fa-solid fa-trash"></i></button></td></tr>`; 
     }).join('');
 }
 function exportStockReportCSV() {
@@ -717,7 +735,7 @@ function renderStorageTables() {
     const q = (document.getElementById('storage-search-input')?.value || '').toLowerCase().trim();
     if (sT) {
         const sList = allStorageStock.filter(s => !q || s.Title.toLowerCase().includes(q) || (s.Source||'').toLowerCase().includes(q));
-        sT.innerHTML = sList.map(s => `<tr><td class="p-3 font-mono">${s.ItemID}</td><td class="p-3 font-bold">${s.Title}</td><td class="p-3">${s.Source || ''}</td><td class="p-3">${s.DateReceived}</td><td class="p-3 text-center">${s.TotalReceived}</td><td class="p-3 text-center text-amber-800">${s.TotalDistributed}</td><td class="p-3 text-center text-emerald-700 font-bold">${s.RemainingStock}</td><td class="p-3 text-right whitespace-nowrap"><button onclick="openStorageDistributeModal('${s.ItemID}')" class="bg-amber-700 hover:bg-amber-800 text-white px-2 py-1 rounded text-[10px] mr-1">Distribute</button><button onclick="openEditStorageModal('${s.ItemID}')" class="text-blue-600 hover:text-blue-800 mr-2" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button><button onclick="deleteStorage('${s.ItemID}')" class="text-red-600 hover:text-red-800" title="Delete"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+        sT.innerHTML = sList.map(s => `<tr><td class="p-3 font-mono">${s.ItemID}</td><td class="p-3 font-bold">${s.Title}</td><td class="p-3">${s.Source || ''}</td><td class="p-3">${s.DateReceived}</td><td class="p-3 text-center">${s.TotalReceived}</td><td class="p-3 text-center text-amber-800">${s.TotalDistributed}</td><td class="p-3 text-center text-emerald-700 font-bold">${s.RemainingStock}</td><td class="p-3 text-right whitespace-nowrap"><button type="button" onclick="openStorageDistributeModal('${s.ItemID}')" class="bg-amber-700 hover:bg-amber-800 text-white px-2 py-1 rounded text-[10px] mr-1">Distribute</button><button type="button" onclick="openEditStorageModal('${s.ItemID}')" class="text-blue-600 hover:text-blue-800 mr-2" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button><button type="button" onclick="deleteStorage('${s.ItemID}')" class="text-red-600 hover:text-red-800" title="Delete"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
     }
     if (dT) {
         const dList = allDistributionLogs.filter(d => !q || d.BookTitle.toLowerCase().includes(q) || d.Recipient.toLowerCase().includes(q));
@@ -743,10 +761,12 @@ function exportStorageCSV() {
 }
 function openStorageIntakeModal() { document.getElementById('storage-intake-modal').classList.remove('hidden'); }
 async function submitStorageIntake() {
-    const copies = parseInt(document.getElementById('intake-copies').value) || 1;
-    const obj = { item_id: "STK-" + Date.now(), title: document.getElementById('intake-title').value.trim(), author: document.getElementById('intake-author').value.trim(), category: document.getElementById('intake-category').value, acquisition_type: document.getElementById('intake-acq-type').value, source: document.getElementById('intake-source').value.trim(), total_received: copies, total_distributed: 0, remaining_stock: copies, date_received: document.getElementById('intake-date').value };
-    const { error } = await supabaseClient.from('storage_stock').insert([obj]); if (error) { alert(error.message); return; }
-    allStorageStock.unshift(mapStorage(obj)); closeModal('storage-intake-modal'); renderStorageTables();
+    try {
+        const copies = parseInt(document.getElementById('intake-copies').value) || 1;
+        const obj = { item_id: "STK-" + Date.now(), title: document.getElementById('intake-title').value.trim(), author: document.getElementById('intake-author').value.trim(), category: document.getElementById('intake-category').value, acquisition_type: document.getElementById('intake-acq-type').value, source: document.getElementById('intake-source').value.trim(), total_received: copies, total_distributed: 0, remaining_stock: copies, date_received: document.getElementById('intake-date').value };
+        const { error } = await supabaseClient.from('storage_stock').insert([obj]); if (error) { alert(error.message); return; }
+        allStorageStock.unshift(mapStorage(obj)); closeModal('storage-intake-modal'); renderStorageTables();
+    } catch(err) { alert(err.message); }
 }
 
 function openEditStorageModal(id) {
@@ -755,20 +775,24 @@ function openEditStorageModal(id) {
     document.getElementById('edit-storage-modal').classList.remove('hidden');
 }
 async function submitEditStorage() {
-    const id = document.getElementById('edit-storage-id').value; const title = document.getElementById('edit-storage-title').value.trim();
-    if (!title) { alert("Title is required."); return; }
-    const old = allStorageStock.find(s => s.ItemID === id); const newTotal = parseInt(document.getElementById('edit-storage-copies').value) || 1;
-    const rem = Math.max(0, newTotal - (old.TotalDistributed || 0));
-    const obj = { title: title, author: document.getElementById('edit-storage-author').value.trim(), category: document.getElementById('edit-storage-category').value, acquisition_type: document.getElementById('edit-storage-acq-type').value, source: document.getElementById('edit-storage-source').value.trim(), total_received: newTotal, remaining_stock: rem, date_received: document.getElementById('edit-storage-date').value };
-    const { error } = await supabaseClient.from('storage_stock').update(obj).eq('item_id', id);
-    if (error) { alert("Error updating storage: " + error.message); return; }
-    closeModal('edit-storage-modal'); alert("Storage updated!"); fetchAdminBackgroundData();
+    try {
+        const id = document.getElementById('edit-storage-id').value; const title = document.getElementById('edit-storage-title').value.trim();
+        if (!title) { alert("Title is required."); return; }
+        const old = allStorageStock.find(s => s.ItemID === id); const newTotal = parseInt(document.getElementById('edit-storage-copies').value) || 1;
+        const rem = Math.max(0, newTotal - (old.TotalDistributed || 0));
+        const obj = { title: title, author: document.getElementById('edit-storage-author').value.trim(), category: document.getElementById('edit-storage-category').value, acquisition_type: document.getElementById('edit-storage-acq-type').value, source: document.getElementById('edit-storage-source').value.trim(), total_received: newTotal, remaining_stock: rem, date_received: document.getElementById('edit-storage-date').value };
+        const { error } = await supabaseClient.from('storage_stock').update(obj).eq('item_id', id);
+        if (error) { alert("Error updating storage: " + error.message); return; }
+        closeModal('edit-storage-modal'); alert("Storage updated!"); fetchAdminBackgroundData();
+    } catch (err) { alert(err.message); }
 }
 async function deleteStorage(id) {
     if (!confirm("Are you sure you want to delete this storage item?")) return;
-    const { error } = await supabaseClient.from('storage_stock').delete().eq('item_id', id);
-    if (error) { alert("Cannot delete. It may be linked to distribution logs."); return; }
-    alert("Storage item deleted!"); fetchAdminBackgroundData();
+    try {
+        const { error } = await supabaseClient.from('storage_stock').delete().eq('item_id', id);
+        if (error) { alert("Cannot delete. It may be linked to distribution logs."); return; }
+        alert("Storage item deleted!"); fetchAdminBackgroundData();
+    } catch(err) { alert(err.message); }
 }
 
 function openStorageDistributeModal(p) {
@@ -784,20 +808,22 @@ function updateDistributionMax() {
     if(i && document.getElementById('dist-available-hint')) document.getElementById('dist-available-hint').textContent = `${i.RemainingStock} copies available.`;
 }
 async function submitDistributionRecord() {
-    const id = document.getElementById('dist-item-select').value; const i = allStorageStock.find(x => x.ItemID === id);
-    if (!i) { alert("Please select a valid item."); return; }
-    const q = parseInt(document.getElementById('dist-qty').value) || 1;
-    const recipient = document.getElementById('dist-recipient').value.trim();
-    const notes = document.getElementById('dist-notes')?.value.trim() || '';
-    const date = document.getElementById('dist-date').value;
+    try {
+        const id = document.getElementById('dist-item-select').value; const i = allStorageStock.find(x => x.ItemID === id);
+        if (!i) { alert("Please select a valid item."); return; }
+        const q = parseInt(document.getElementById('dist-qty').value) || 1;
+        const recipient = document.getElementById('dist-recipient').value.trim();
+        const notes = document.getElementById('dist-notes')?.value.trim() || '';
+        const date = document.getElementById('dist-date').value;
 
-    if (!recipient) { alert("Please provide a recipient."); return; }
-    if (q > i.RemainingStock) { alert(`Not enough stock! Only ${i.RemainingStock} copies left.`); return; }
-    if (q < 1) { alert("Quantity must be at least 1."); return; }
+        if (!recipient) { alert("Please provide a recipient."); return; }
+        if (q > i.RemainingStock) { alert(`Not enough stock! Only ${i.RemainingStock} copies left.`); return; }
+        if (q < 1) { alert("Quantity must be at least 1."); return; }
 
-    const obj = { log_id: "DST-" + Date.now(), item_id: id, book_title: i.Title, recipient: recipient, quantity: q, date: date, notes: notes };
-    await supabaseClient.from('distribution_logs').insert([obj]); await supabaseClient.from('storage_stock').update({ total_distributed: i.TotalDistributed + q, remaining_stock: i.RemainingStock - q }).eq('item_id', id);
-    i.TotalDistributed += q; i.RemainingStock -= q; allDistributionLogs.unshift(mapDist(obj)); closeModal('storage-distribute-modal'); renderStorageTables(); alert("Distributed!");
+        const obj = { log_id: "DST-" + Date.now(), item_id: id, book_title: i.Title, recipient: recipient, quantity: q, date: date, notes: notes };
+        await supabaseClient.from('distribution_logs').insert([obj]); await supabaseClient.from('storage_stock').update({ total_distributed: i.TotalDistributed + q, remaining_stock: i.RemainingStock - q }).eq('item_id', id);
+        i.TotalDistributed += q; i.RemainingStock -= q; allDistributionLogs.unshift(mapDist(obj)); closeModal('storage-distribute-modal'); renderStorageTables(); alert("Distributed!");
+    } catch(err) { alert(err.message); }
 }
 
 // ---------------- MEMBERS ----------------
@@ -810,7 +836,7 @@ function renderMembersTable() {
         if(q && !(m.FullName.toLowerCase().includes(q) || m.MemberID.toLowerCase().includes(q) || (m.Phone||'').includes(q))) return false;
         return true;
     });
-    tb.innerHTML = list.map(m => `<tr><td class="p-3 font-bold">${m.MemberID}</td><td class="p-3">${m.FullName}</td><td class="p-3">${m.Designation}</td><td class="p-3">${m.Phone || ''}</td><td class="p-3 text-right whitespace-nowrap"><button onclick="openEditMemberModal('${m.MemberID}')" class="text-blue-600 hover:text-blue-800 mr-2" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button><button onclick="deleteMember('${m.MemberID}')" class="text-red-600 hover:text-red-800" title="Delete"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+    tb.innerHTML = list.map(m => `<tr><td class="p-3 font-bold">${m.MemberID}</td><td class="p-3">${m.FullName}</td><td class="p-3">${m.Designation}</td><td class="p-3">${m.Phone || ''}</td><td class="p-3 text-right whitespace-nowrap"><button type="button" onclick="openEditMemberModal('${m.MemberID}')" class="text-blue-600 hover:text-blue-800 mr-2" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button><button type="button" onclick="deleteMember('${m.MemberID}')" class="text-red-600 hover:text-red-800" title="Delete"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
 }
 function exportMembersCSV() {
     const q = (document.getElementById('member-search-input')?.value || '').toLowerCase().trim();
@@ -827,10 +853,12 @@ function exportMembersCSV() {
 }
 
 async function adminRegisterMember() {
-    const obj = { member_id: document.getElementById('new-mem-id').value.trim().toUpperCase(), full_name: document.getElementById('new-mem-name').value.trim(), designation: document.getElementById('new-mem-desig').value, phone: document.getElementById('new-mem-phone').value.trim() };
-    if (!obj.member_id || !obj.full_name) { alert("Provide ID and Name"); return; }
-    const { error } = await supabaseClient.from('members').insert([obj]); if (error) { alert(error.message); return; }
-    allMembers.push(mapMember(obj)); alert("Registered!"); renderMembersTable(); document.getElementById('new-mem-id').value = ''; document.getElementById('new-mem-name').value = '';
+    try {
+        const obj = { member_id: document.getElementById('new-mem-id').value.trim().toUpperCase(), full_name: document.getElementById('new-mem-name').value.trim(), designation: document.getElementById('new-mem-desig').value, phone: document.getElementById('new-mem-phone').value.trim() };
+        if (!obj.member_id || !obj.full_name) { alert("Provide ID and Name"); return; }
+        const { error } = await supabaseClient.from('members').insert([obj]); if (error) { alert(error.message); return; }
+        allMembers.push(mapMember(obj)); alert("Registered!"); renderMembersTable(); document.getElementById('new-mem-id').value = ''; document.getElementById('new-mem-name').value = '';
+    } catch(err) { alert(err.message); }
 }
 function openEditMemberModal(id) { 
     targetEditMember = allMembers.find(m => m.MemberID === id); 
@@ -842,17 +870,21 @@ function openEditMemberModal(id) {
     document.getElementById('edit-member-modal').classList.remove('hidden'); 
 }
 async function submitEditMember() { 
-    const id = document.getElementById('edit-mem-id').value; const name = document.getElementById('edit-mem-name').value.trim(); const desig = document.getElementById('edit-mem-desig').value; const phone = document.getElementById('edit-mem-phone').value.trim();
-    if (!name) { alert("Name cannot be empty."); return; }
-    const { error } = await supabaseClient.from('members').update({ full_name: name, designation: desig, phone: phone }).eq('member_id', id); 
-    if(error) { alert("Error: " + error.message); return; } 
-    closeModal('edit-member-modal'); alert("Member details updated!"); fetchLibraryDataFromSupabase(); 
+    try {
+        const id = document.getElementById('edit-mem-id').value; const name = document.getElementById('edit-mem-name').value.trim(); const desig = document.getElementById('edit-mem-desig').value; const phone = document.getElementById('edit-mem-phone').value.trim();
+        if (!name) { alert("Name cannot be empty."); return; }
+        const { error } = await supabaseClient.from('members').update({ full_name: name, designation: desig, phone: phone }).eq('member_id', id); 
+        if(error) { alert("Error: " + error.message); return; } 
+        closeModal('edit-member-modal'); alert("Member details updated!"); fetchLibraryDataFromSupabase(); 
+    } catch(err) { alert(err.message); }
 }
 async function deleteMember(id) {
     if (!confirm(`Are you sure you want to delete member ${id}?`)) return;
-    const { error } = await supabaseClient.from('members').delete().eq('member_id', id);
-    if (error) { alert("Cannot delete member. They likely have active or past borrow records."); return; }
-    alert("Member deleted!"); fetchLibraryDataFromSupabase();
+    try {
+        const { error } = await supabaseClient.from('members').delete().eq('member_id', id);
+        if (error) { alert("Cannot delete member. They likely have active or past borrow records."); return; }
+        alert("Member deleted!"); fetchLibraryDataFromSupabase();
+    } catch(err) { alert(err.message); }
 }
 
 // ---------------- ANALYTICS & REPORTS (BORROWS) ----------------
@@ -907,6 +939,10 @@ function exportAnalyticsCSV() {
     downloadCSV(headers, rows, "CBC_Borrow_Analytics");
 }
 
+function closeModal(id) { 
+    const el = document.getElementById(id);
+    if (el) el.classList.add('hidden'); 
+}
 window.addEventListener('click', (e) => { 
     ['login-modal', 'book-modal', 'borrow-modal', 'onsite-modal', 'admin-pin-modal', 'add-book-modal', 'edit-book-modal', 'storage-intake-modal', 'edit-storage-modal', 'storage-distribute-modal', 'issue-modal', 'return-modal', 'edit-member-modal', 'my-requests-modal', 'create-group-modal', 'edit-group-modal', 'group-modal', 'all-groups-modal', 'admin-settings-modal'].forEach(id => { 
         const el = document.getElementById(id); 
