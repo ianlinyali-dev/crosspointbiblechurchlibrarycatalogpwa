@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cbc-library-v6.5';
+const CACHE_NAME = 'cbc-library-v3';
 const ASSETS_TO_CACHE = [
   './index.html',
   './style.css',
@@ -43,4 +43,11 @@ self.addEventListener('fetch', (event) => {
       if (event.request.mode === 'navigate') return caches.match('./index.html');
     })
   );
+});
+
+// Listens for the signal from index.html to apply the new update immediately
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
