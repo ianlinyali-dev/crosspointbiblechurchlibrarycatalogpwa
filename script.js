@@ -27,6 +27,9 @@ let targetReturnBorrow = null;
 let targetEditMember = null;
 let currentStorageSubTab = 'stock';
 
+// PWA Install Prompt Variable
+let deferredPrompt;
+
 document.addEventListener('DOMContentLoaded', () => {
     updateUserAuthUI();
     updateLibrarianUI();
@@ -41,6 +44,26 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('search-input')?.addEventListener('input', handleSearchAndFilter);
     document.getElementById('category-filter')?.addEventListener('change', handleSearchAndFilter);
 });
+
+// PWA INSTALL LOGIC
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('install-app-btn-desktop')?.classList.remove('hidden');
+    document.getElementById('install-app-btn-mobile')?.classList.remove('hidden');
+});
+
+async function installPWA() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            document.getElementById('install-app-btn-desktop')?.classList.add('hidden');
+            document.getElementById('install-app-btn-mobile')?.classList.add('hidden');
+        }
+        deferredPrompt = null;
+    }
+}
 
 // MAP SUPABASE TO PASCALCASE OBJECTS
 const mapMember = db => ({ MemberID: db.member_id, FullName: db.full_name, Designation: db.designation, Phone: db.phone });
@@ -277,7 +300,7 @@ function checkBorrowLimit() {
         alert(`BORROWING LIMIT REACHED:\nYou have ${activeLoans.length} active request(s). Limit is ${limit} for ${currentUser.designation}s.\nPlease return books first.`);
         return false;
     }
-    const alreadyRequested = activeLoans.some(b => b.BookID == activeBookForAction.id);
+    const alreadyRequested = activeLoans.some(b => b.BookID == activeBookForAction.id && ['Pending', 'Approved', 'Active'].includes(b.Status));
     if (alreadyRequested) { alert(`You already have an active request for "${activeBookForAction.title}".`); return false; }
     return true;
 }
@@ -451,7 +474,7 @@ function renderCirculationTable() {
         if (b.Status === 'Pending') btns = `<button onclick="approveBorrow('${b.BorrowID}')" class="bg-blue-700 text-white px-2 py-1 rounded text-xs font-bold">Approve</button>`;
         else if (b.Status === 'Approved') btns = `<button onclick="openIssueModal('${b.BorrowID}')" class="bg-emerald-700 text-white px-2 py-1 rounded text-xs font-bold">Issue</button>`;
         else if (b.Status === 'Active') btns = `<button onclick="adminExtendLoan('${b.BorrowID}')" class="bg-church-600 text-white px-2 py-1 rounded text-xs mr-1">+2 Wks</button><button onclick="openReturnModal('${b.BorrowID}')" class="bg-black text-white px-2 py-1 rounded text-xs">Return</button>`;
-        return `<tr class="hover:bg-church-50 border-b"><td class="p-3 font-bold">${b.BookTitle}</td><td class="p-3">${b.MemberName}<br><span class="text-[10px] text-church-500">${b.MemberID}</span></td><td class="p-3">${b.PickupDate}</td><td class="p-3 font-bold">${b.DueDate}</td><td class="p-3 font-bold text-[10px]">${b.Status}</td><td class="p-3"><button onclick="triggerBorrowerWhatsApp('${b.MemberID}', '${b.MemberName}', '${b.BookTitle.replace(/'/g,"\\'")}', '${b.Status}', '${b.DueDate}')" class="text-emerald-700 border border-emerald-300 rounded px-1.5 py-0.5 text-[10px] bg-emerald-50">WhatsApp</button></td><td class="p-3 text-right">${btns}</td></tr>`;
+        return `<tr class="hover:bg-church-50 border-b"><td class="p-3 font-bold">${b.BookTitle}</td><td class="p-3">${b.MemberName}<br><span class="text-[10px] text-church-500">${b.MemberID}</span></td><td class="p-3">${b.PickupDate}</td><td class="p-3 font-bold">${b.DueDate}</td><td class="p-3 font-bold text-[10px]">${b.Status}</td><td class="p-3"><button onclick="triggerBorrowerWhatsApp('${b.MemberID}', '${b.MemberName}', '${b.BookTitle.replace(/'/g,"\\'")}', '${b.Status}', '${b.DueDate}')" class="text-emerald-700 border border-emerald-300 rounded px-1.5 py-0.5 text-[10px] bg-emerald-50">WhatsApp</button></td><td class="p-3 text-right whitespace-nowrap">${btns}</td></tr>`;
     }).join('');
 }
 async function approveBorrow(id) { const { error } = await supabaseClient.from('borrows').update({ status: 'Approved' }).eq('borrow_id', id); if (!error) { const b = allBorrows.find(x => x.BorrowID === id); if (b) b.Status = 'Approved'; renderAdminTables(); initCatalog(); } }
@@ -461,7 +484,7 @@ function openReturnModal(id) { targetReturnBorrow = allBorrows.find(b => b.Borro
 async function confirmAdminReturn() { const date = document.getElementById('return-date-input').value; const { error } = await supabaseClient.from('borrows').update({ status: 'Returned', return_date: date }).eq('borrow_id', targetReturnBorrow.BorrowID); if (!error) { targetReturnBorrow.Status = 'Returned'; closeModal('return-modal'); renderAdminTables(); initCatalog(); } }
 async function adminExtendLoan(id) { const b = allBorrows.find(x => x.BorrowID === id); const nd = new Date(b.DueDate); nd.setDate(nd.getDate() + 14); const nStr = nd.toISOString().split('T')[0]; const { error } = await supabaseClient.from('borrows').update({ due_date: nStr }).eq('borrow_id', id); if (!error) { b.DueDate = nStr; renderAdminTables(); alert("Extended"); } }
 
-// ---------------- CATALOG STOCK ----------------
+// ---------------- ADD, EDIT, DELETE BOOKS ----------------
 function openAddBookModal() { document.getElementById('add-book-modal').classList.remove('hidden'); }
 async function submitNewBook() {
     const title = document.getElementById('add-book-title').value.trim();
@@ -520,7 +543,7 @@ function renderStockAuditTable() {
 
     tb.innerHTML = list.map(b => { 
         const a = calculateAvailableCopies(b.id, b.copies); 
-        return `<tr class="border-b"><td class="p-3 font-mono">#${b.id}</td><td class="p-3 font-bold">${b.title} <br><span class="text-[10px] font-normal text-church-500">By ${b.author}</span></td><td class="p-3">${b.category}</td><td class="p-3 text-[10px] font-bold">${b.classification}</td><td class="p-3 text-center">${b.copies}</td><td class="p-3 text-center text-amber-800">${b.copies - a}</td><td class="p-3 text-center text-emerald-700 font-bold">${a}</td><td class="p-3 text-center">${a > 0 ? '<span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[10px]">In Stock</span>' : '<span class="bg-red-100 text-red-800 px-1.5 py-0.5 rounded text-[10px]">Out</span>'}</td><td class="p-3 text-right"><button onclick="openEditBookModal(${b.id})" class="text-blue-600 hover:text-blue-800 mr-2" title="Edit Book"><i class="fa-solid fa-pen-to-square"></i></button><button onclick="deleteBook(${b.id})" class="text-red-600 hover:text-red-800" title="Delete Book"><i class="fa-solid fa-trash"></i></button></td></tr>`; 
+        return `<tr class="border-b"><td class="p-3 font-mono">#${b.id}</td><td class="p-3 font-bold">${b.title} <br><span class="text-[10px] font-normal text-church-500">By ${b.author}</span></td><td class="p-3">${b.category}</td><td class="p-3 text-[10px] font-bold">${b.classification}</td><td class="p-3 text-center">${b.copies}</td><td class="p-3 text-center text-amber-800">${b.copies - a}</td><td class="p-3 text-center text-emerald-700 font-bold">${a}</td><td class="p-3 text-center">${a > 0 ? '<span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[10px]">In Stock</span>' : '<span class="bg-red-100 text-red-800 px-1.5 py-0.5 rounded text-[10px]">Out</span>'}</td><td class="p-3 text-right whitespace-nowrap"><button onclick="openEditBookModal(${b.id})" class="text-blue-600 hover:text-blue-800 mr-2" title="Edit Book"><i class="fa-solid fa-pen-to-square"></i></button><button onclick="deleteBook(${b.id})" class="text-red-600 hover:text-red-800" title="Delete Book"><i class="fa-solid fa-trash"></i></button></td></tr>`; 
     }).join('');
 }
 function exportStockReportCSV() {
@@ -540,12 +563,8 @@ function exportStockReportCSV() {
     });
 
     if(list.length === 0) { alert("No data to export based on current filters."); return; }
-
     const headers = ["Book ID", "Title", "Author", "Category", "Access Rule", "Total Copies", "Available on Shelf", "Status"];
-    const rows = list.map(b => {
-        const a = calculateAvailableCopies(b.id, b.copies);
-        return [b.id, `"${b.title.replace(/"/g, '""')}"`, `"${b.author.replace(/"/g, '""')}"`, `"${b.category}"`, `"${b.classification}"`, b.copies, a, `"${a > 0 ? 'In Stock' : 'Out of Stock'}"`];
-    });
+    const rows = list.map(b => { const a = calculateAvailableCopies(b.id, b.copies); return [b.id, `"${b.title.replace(/"/g, '""')}"`, `"${b.author.replace(/"/g, '""')}"`, `"${b.category}"`, `"${b.classification}"`, b.copies, a, `"${a > 0 ? 'In Stock' : 'Out of Stock'}"`]; });
     downloadCSV(headers, rows, "CBC_Stock_Audit_Report");
 }
 
@@ -554,7 +573,6 @@ function switchStorageSubTab(t) { currentStorageSubTab = t; document.getElementB
 function renderStorageTables() {
     const sT = document.getElementById('storage-stock-tbody'); const dT = document.getElementById('storage-dist-tbody');
     const q = (document.getElementById('storage-search-input')?.value || '').toLowerCase().trim();
-    
     if (sT) {
         const sList = allStorageStock.filter(s => !q || s.Title.toLowerCase().includes(q) || s.Source.toLowerCase().includes(q));
         sT.innerHTML = sList.map(s => `<tr><td class="p-3 font-mono">${s.ItemID}</td><td class="p-3 font-bold">${s.Title}</td><td class="p-3">${s.Source}</td><td class="p-3">${s.DateReceived}</td><td class="p-3 text-center">${s.TotalReceived}</td><td class="p-3 text-center text-amber-800">${s.TotalDistributed}</td><td class="p-3 text-center text-emerald-700 font-bold">${s.RemainingStock}</td><td class="p-3 text-right"><button onclick="openStorageDistributeModal('${s.ItemID}')" class="bg-amber-700 text-white px-2 py-1 rounded text-[10px]">Distribute</button></td></tr>`).join('');
@@ -609,27 +627,22 @@ function renderMembersTable() {
     const tb = document.getElementById('admin-members-tbody'); if (!tb) return;
     const q = (document.getElementById('member-search-input')?.value || '').toLowerCase().trim();
     const d = document.getElementById('member-desig-filter')?.value || '';
-    
     const list = allMembers.filter(m => {
         if(d && m.Designation !== d) return false;
         if(q && !(m.FullName.toLowerCase().includes(q) || m.MemberID.toLowerCase().includes(q) || (m.Phone||'').includes(q))) return false;
         return true;
     });
-    
     tb.innerHTML = list.map(m => `<tr><td class="p-3 font-bold">${m.MemberID}</td><td class="p-3">${m.FullName}</td><td class="p-3">${m.Designation}</td><td class="p-3">${m.Phone}</td><td class="p-3 text-right"><button onclick="openEditMemberModal('${m.MemberID}')" class="text-church-700 underline font-bold text-xs">Edit Phone</button></td></tr>`).join('');
 }
 function exportMembersCSV() {
     const q = (document.getElementById('member-search-input')?.value || '').toLowerCase().trim();
     const d = document.getElementById('member-desig-filter')?.value || '';
-    
     const list = allMembers.filter(m => {
         if(d && m.Designation !== d) return false;
         if(q && !(m.FullName.toLowerCase().includes(q) || m.MemberID.toLowerCase().includes(q) || (m.Phone||'').includes(q))) return false;
         return true;
     });
-
     if (list.length === 0) { alert("No members to export."); return; }
-
     const headers = ["Member ID", "Full Name", "Designation", "Phone"];
     const rows = list.map(m => [`"${m.MemberID}"`, `"${m.FullName.replace(/"/g, '""')}"`, `"${m.Designation}"`, `"${m.Phone || ''}"`]);
     downloadCSV(headers, rows, "CBC_Members_Directory");
